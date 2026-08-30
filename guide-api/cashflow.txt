@@ -1,0 +1,261 @@
+# Cashflow API Documentation
+
+## Base URL
+```
+/api/cashflow
+```
+
+## Authentication
+All endpoints require Bearer JWT token. Include in header:
+```
+Authorization: Bearer <access-token>
+```
+
+---
+
+# Cashflow API
+
+## Endpoints
+
+### 1. Get All Cashflows
+```
+GET /api/cashflow
+```
+
+**Query Parameters (FilterCashflowDto):**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tanggal` | string (YYYY-MM-DD) | Filter by specific date |
+| `date` | string (YYYY-MM-DD) | Alias for tanggal |
+| `startDate` | string (YYYY-MM-DD) | Start date range |
+| `endDate` | string (YYYY-MM-DD) | End date range |
+| `bulan` | int (1-12) | Filter by month (use with tahun) |
+| `month` | int (1-12) | Alias for bulan |
+| `tahun` | int (2000-2100) | Filter by year (use with bulan) |
+| `year` | int (2000-2100) | Alias for tahun |
+| `periode` | string (YYYY-MM) | Filter by period, e.g. `2026-08` |
+| `tipe` | enum | Filter by cashflow type: `Pemasukan` or `Pengeluaran` |
+
+**Example Request:**
+```
+GET /api/cashflow?tipe=Pemasukan&periode=2026-08
+```
+
+**Example Response:**
+```json
+[
+  {
+    "idCashflow": 1,
+    "tanggal": "2026-08-15",
+    "tipe": "Pemasukan",
+    "nominal": 5000000.00,
+    "keterangan": "Pembayaran pelanggan",
+    "idPembelian": null,
+    "idPenjualan": 3,
+    "idKomisi": null,
+    "createdAt": "2026-08-15T00:00:00.000Z",
+    "updatedAt": "2026-08-15T00:00:00.000Z",
+    "pembelian": null,
+    "penjualan": {
+      "idPenjualan": 3,
+      "imei5": "12345",
+      "tanggalKeluar": "2026-08-15",
+      "hargaJual": 5000000.00,
+      "profitKotor": 1000000.00
+    },
+    "komisi": null
+  }
+]
+```
+
+---
+
+### 2. Get Cashflow by ID
+```
+GET /api/cashflow/:id
+```
+
+**Example Response:**
+```json
+{
+  "idCashflow": 1,
+  "tanggal": "2026-08-15",
+  "tipe": "Pemasukan",
+  "nominal": 5000000.00,
+  "keterangan": "Pembayaran pelanggan",
+  "idPembelian": null,
+  "idPenjualan": 3,
+  "idKomisi": null,
+  "createdAt": "2026-08-15T00:00:00.000Z",
+  "updatedAt": "2026-08-15T00:00:00.000Z",
+  "pembelian": null,
+  "penjualan": {
+    "idPenjualan": 3,
+    "imei5": "12345",
+    "tanggalKeluar": "2026-08-15",
+    "hargaJual": 5000000.00,
+    "profitKotor": 1000000.00
+  },
+  "komisi": null
+}
+```
+
+---
+
+### 3. Create Cashflow
+```
+POST /api/cashflow
+```
+
+**Request Body (CreateCashflowDto):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tanggal` | string (YYYY-MM-DD) | Yes | Tanggal cashflow |
+| `tipe` | enum | Yes | `Pemasukan` or `Pengeluaran` |
+| `nominal` | number (decimal) | Yes | Nominal amount (>= 0) |
+| `keterangan` | string | No | Optional description |
+| `idPembelian` | int | No | FK to `pembelian_hp.idPembelian` (opsional) |
+| `idPenjualan` | int | No | FK to `penjualan_hp.idPenjualan` (opsional) |
+| `idKomisi` | int | No | FK to `komisi_transaksi.idKomisi` (opsional) |
+
+**Example Request:**
+```json
+{
+  "tanggal": "2026-08-31",
+  "tipe": "Pengeluaran",
+  "nominal": 1500000,
+  "keterangan": "Pembelian perlengkapan kantor",
+  "idPembelian": 5
+}
+```
+
+**Example Response:**
+```json
+{
+  "idCashflow": 5,
+  "tanggal": "2026-08-31",
+  "tipe": "Pengeluaran",
+  "nominal": 1500000.00,
+  "keterangan": "Pembelian perlengkapan kantor",
+  "idPembelian": 5,
+  "idPenjualan": null,
+  "idKomisi": null,
+  "createdAt": "2026-08-31T00:00:00.000Z",
+  "updatedAt": "2026-08-31T00:00:00.000Z",
+  "pembelian": {
+    "idPembelian": 5,
+    "imei5": "12345",
+    "tanggalMasuk": "2026-08-01",
+    "hargaBeli": 4000000.00
+  },
+  "penjualan": null,
+  "komisi": null
+}
+```
+
+---
+
+### 4. Update Cashflow
+```
+PATCH /api/cashflow/:id
+```
+
+**Request Body (UpdateCashflowDto) - all fields optional:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tanggal` | string (YYYY-MM-DD) | Updated tanggal |
+| `tipe` | enum | Updated tipe |
+| `nominal` | number (decimal) | Updated nominal |
+| `keterangan` | string | Updated keterangan |
+
+**Example Request:**
+```json
+{
+  "nominal": 2000000,
+  "keterangan": "Updated keterangan"
+}
+```
+
+---
+
+### 5. Delete Cashflow
+```
+DELETE /api/cashflow/:id
+```
+
+**Example Response:**
+```json
+{
+  "message": "Cashflow deleted successfully"
+}
+```
+
+---
+
+## Error Responses
+
+| Error | Code | Description |
+|-------|------|-------------|
+| `NotFoundException` | 404 | Cashflow not found |
+| `ConflictException` | 409 | Duplicate entry |
+| `BadRequestException` | 400 | Invalid filter parameters or date format |
+
+---
+
+## Database Schema Reference
+
+### Cashflow Model
+| Field | Type | Notes |
+|-------|------|-------|
+| `idCashflow` | Int (PK) | Auto-increment |
+| `tanggal` | DateTime (Date) | Transaction date |
+| `tipe` | TipeCashflow | `Pemasukan` or `Pengeluaran` |
+| `nominal` | Decimal(12,2) | Amount |
+| `keterangan` | String? (Text) | Optional description |
+| `idPembelian` | Int? (unique, FK) | References `pembelian_hp` |
+| `idPenjualan` | Int? (unique, FK) | References `penjualan_hp` |
+| `idKomisi` | Int? (unique, FK) | References `komisi_transaksi` |
+| `createdAt` | DateTime | Auto-generated |
+| `updatedAt` | DateTime | Auto-updated |
+
+### TipeCashflow Enum
+- `Pemasukan` - Income
+- `Pengeluaran` - Expense
+
+---
+
+## SQL Query Examples
+
+### Total Arus Kas per Tipe
+```sql
+SELECT
+  tipe,
+  SUM(nominal) as total_nominal,
+  COUNT(*) as jumlah_transaksi
+FROM cashflow
+GROUP BY tipe;
+```
+
+### Cashflow per Bulan
+```sql
+SELECT
+  DATE_TRUNC('month', tanggal) as bulan,
+  tipe,
+  SUM(nominal) as total_nominal
+FROM cashflow
+WHERE tanggal >= CURRENT_DATE - INTERVAL '12 months'
+GROUP BY DATE_TRUNC('month', tanggal), tipe
+ORDER BY bulan DESC;
+```
+
+### Saldo Akhir (Pemasukan - Pengeluaran)
+```sql
+SELECT
+  COALESCE(SUM(CASE WHEN tipe = 'Pemasukan' THEN nominal ELSE 0 END), 0) as total_pemasukan,
+  COALESCE(SUM(CASE WHEN tipe = 'Pengeluaran' THEN nominal ELSE 0 END), 0) as total_pengeluaran,
+  COALESCE(SUM(CASE WHEN tipe = 'Pemasukan' THEN nominal - nominal END), 0) as saldo_bersih
+FROM cashflow;
+```

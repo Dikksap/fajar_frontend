@@ -17,15 +17,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Manajemen",
-    icon: "settings",
-    items: [
-      { to: "/admin/katalog-model", label: "Katalog Model", icon: "phone_iphone" },
-      { to: "/admin/pegawai", label: "Pegawai", icon: "badge" },
-      { to: "/admin/aktivitas", label: "Aktivitas", icon: "bolt" },
-    ],
-  },
-  {
     label: "Transaksi",
     icon: "swap_horiz",
     items: [
@@ -45,6 +36,16 @@ const NAV_GROUPS: NavGroup[] = [
     icon: "account_balance",
     items: [
       { to: "/admin/komisi", label: "Komisi", icon: "payments" },
+      { to: "/admin/cashflow", label: "Cashflow", icon: "account_balance_wallet" },
+    ],
+  },
+  {
+    label: "Manajemen",
+    icon: "settings",
+    items: [
+      { to: "/admin/katalog-model", label: "Katalog Model", icon: "phone_iphone" },
+      { to: "/admin/pegawai", label: "Pegawai", icon: "badge" },
+      { to: "/admin/aktivitas", label: "Aktivitas", icon: "bolt" },
     ],
   },
 ];

@@ -87,3 +87,8 @@ html, body {
   box-shadow: 0 0 0 3px rgba(27, 107, 81, 0.12);
   outline: none;
 }
+
+/* Ambient shadow */
+.ambient-shadow-sm {
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.05);
+}

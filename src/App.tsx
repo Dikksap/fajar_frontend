@@ -10,6 +10,7 @@ import UnitHpPage from "./pages/admin/UnitHpPage";
 import PembelianPage from "./pages/admin/PembelianPage";
 import PenjualanPage from "./pages/admin/PenjualanPage";
 import KomisiPage from "./pages/admin/KomisiPage";
+import CashflowPage from "./pages/admin/CashflowPage";
 import { AdminGuard, GuestRoute } from "./routes/guards";
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/admin/pembelian" element={<PembelianPage />} />
           <Route path="/admin/penjualan" element={<PenjualanPage />} />
           <Route path="/admin/komisi" element={<KomisiPage />} />
+          <Route path="/admin/cashflow" element={<CashflowPage />} />
         </Route>
       </Route>
 
