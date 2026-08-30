@@ -1,0 +1,227 @@
+CARA PENGGUNAAN API LOGIN / LOGOUT
+Fajar Inventory Backend - NestJS + JWT
+Base URL: http://localhost:3000
+Swagger UI: http://localhost:3000/api
+====================================================
+
+1. LOGIN
+----------------------------------------------------
+Endpoint: POST /auth/login
+Status: PUBLIC (tidak butuh token)
+Content-Type: application/json
+
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "secret123"
+}
+
+Validasi:
+- email: harus format email valid
+- password: string, tidak boleh kosong
+
+Contoh cURL:
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"secret123"}'
+
+Contoh JavaScript fetch:
+const res = await fetch('http://localhost:3000/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'user@example.com', password: 'secret123' })
+});
+const data = await res.json();
+localStorage.setItem('access_token', data.access_token);
+
+Contoh Axios:
+const { data } = await axios.post('http://localhost:3000/auth/login', {
+  email: 'user@example.com',
+  password: 'secret123'
+});
+localStorage.setItem('access_token', data.access_token);
+
+Response Sukses (201):
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // payload: { sub, email, role }
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "user@example.com",
+    "role": "user", // atau "admin"
+    "createdAt": "2026-08-30T00:00:00.000Z",
+    "updatedAt": "2026-08-30T00:00:00.000Z"
+  }
+}
+Catatan Role:
+- Field role ada di tabel User: enum Role { admin, user } default "user" (prisma/schema.prisma)
+- JWT payload sekarang: { sub: user.id, email: user.email, role: user.role }
+- JwtStrategy validate() return { userId, email, role } -> tersedia di request.user
+
+Response Gagal (401 Unauthorized):
+{
+  "statusCode": 401,
+  "message": "Invalid credentials"
+}
+Penyebab: email tidak terdaftar atau password salah.
+
+2. MENGGUNAKAN TOKEN (AKSES ENDPOINT TERPROTEKSI)
+----------------------------------------------------
+Semua endpoint selain POST /auth/login dan POST /users butuh JWT.
+Kirim token di header:
+
+Authorization: Bearer <access_token>
+
+Contoh akses GET /users:
+curl http://localhost:3000/users \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+
+fetch:
+await fetch('http://localhost:3000/users', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+
+axios:
+axios.get('http://localhost:3000/users', {
+  headers: { Authorization: `Bearer ${token}` }
+});
+
+Jika token hilang/expired/salah -> 401 Unauthorized.
+
+Konfigurasi Token:
+- Secret: env JWT_SECRET (wajib)
+- Expired: env JWT_EXPIRES_IN (default "1d" = 1 hari)
+  Contoh: JWT_EXPIRES_IN=7d  atau  2h  atau  30m
+
+Swagger:
+1. Buka http://localhost:3000/api
+2. Klik "Authorize" (ikon gembok)
+3. Isi: Bearer <access_token>  (tanpa kata Bearer juga bisa, Swagger otomatis tambah)
+4. Klik Authorize -> sekarang semua endpoint terproteksi bisa di-Try it out
+
+3. LOGOUT
+----------------------------------------------------
+Catatan: Backend ini JWT stateless, TIDAK ada endpoint POST /auth/logout
+di AuthController (src/auth/auth.controller.ts:7). Logout dilakukan
+di sisi client dengan menghapus token.
+
+Cara Logout Client-Side (yang dipakai sekarang):
+// Javascript
+localStorage.removeItem('access_token');
+sessionStorage.removeItem('access_token');
+// atau hapus cookie jika pakai cookie
+// lalu redirect ke halaman login
+window.location.href = '/login';
+
+Contoh React:
+const logout = () => {
+  localStorage.removeItem('access_token');
+  navigate('/login');
+};
+
+Kenapa tidak ada API logout?
+- JWT disimpan client, server tidak simpan session.
+- Setelah token dihapus client, token tidak akan dikirim lagi.
+- Token tetap valid sampai expired, tapi tidak berguna jika client sudah hapus.
+
+Jika Butuh Logout Server-Side (opsional):
+Tambahkan endpoint untuk blacklist token (butuh DB/Redis).
+
+Contoh implementasi yang bisa ditambahkan:
+
+// src/auth/auth.controller.ts
+@Post('logout')
+@ApiOperation({ summary: 'Logout (hapus token client + optional blacklist)' })
+@ApiBearerAuth('access-token')
+logout() {
+  // Stateless: cukup return sukses, client yang hapus token
+  return { message: 'Logged out successfully' };
+}
+
+// Atau dengan blacklist:
+// 1. Buat tabel blacklisted_tokens di Prisma
+// 2. Saat logout, simpan token ke blacklist sampai expired
+// 3. Di JwtStrategy, cek apakah token ada di blacklist -> reject
+
+cURL logout (jika sudah ditambahkan):
+curl -X POST http://localhost:3000/auth/logout \
+  -H "Authorization: Bearer <access_token>"
+
+Client tetap harus:
+localStorage.removeItem('access_token');
+
+4. ALUR LENGKAP
+----------------------------------------------------
+[Register] POST /users {name,email,password,role?} (public)
+  - role optional: "admin" | "user", default "user" jika tidak diisi
+  - Validasi: IsEnum Role (src/users/dto/create-user.dto.ts)
+  - Contoh admin: { "name":"Admin","email":"admin@example.com","password":"secret123","role":"admin" }
+    |
+    v
+[Login] POST /auth/login -> dapat access_token (payload ada role) + user.role
+    |
+    v
+Simpan token (localStorage / httpOnly cookie)
+    |
+    v
+Akses API terproteksi dengan header Authorization: Bearer <token>
+  -> request.user = { userId, email, role } (dari JwtStrategy)
+    |
+    v
+[Logout] hapus token di client (+ hit POST /auth/logout jika ada)
+
+5. ROLE (admin / user)
+----------------------------------------------------
+Enum & Schema:
+- prisma/schema.prisma: enum Role { admin user } + model User { role Role @default(user) }
+- Migration: 20260830092204_add_role_to_user -> CREATE TYPE "Role" AS ENUM ('admin','user')
+- DB default "user" jika tidak diisi
+
+Register dengan Role:
+- Endpoint: POST /users (PUBLIC)
+- Body sekarang:
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "secret123",
+    "role": "admin" // optional, enum admin|user, default user
+  }
+- DTO: src/users/dto/create-user.dto.ts:4 (IsEnum Role, IsOptional)
+- Service: src/users/users.service.ts:16 simpan role, select role di create/findAll/findOne/update
+
+Update Role:
+- Endpoint: PATCH /users/:id { "role": "admin" }
+- UpdateUserDto extends PartialType(CreateUserDto) jadi role bisa di-patch
+- Service handle data.role di update()
+
+Login & JWT:
+- src/auth/auth.service.ts:32 payload = { sub, email, role }, return user.role
+- src/auth/strategies/jwt.strategy.ts:22 validate() return { userId, email, role }
+- Decode JWT: jwtDecode(token) -> { sub, email, role, iat, exp }
+
+RBAC (Role Based Access Control):
+- Decorator: src/auth/decorators/roles.decorator.ts -> @Roles('admin')
+- Guard: src/auth/guards/roles.guard.ts -> cek request.user.role
+- Contoh pakai:
+  import { Roles } from './auth/decorators/roles.decorator';
+  import { RolesGuard } from './auth/guards/roles.guard';
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  @Get('admin-only')
+  adminOnly() { return 'only admin'; }
+- Pasang global atau per-controller: app.useGlobalGuards(new RolesGuard(reflector)) atau @UseGuards(JwtAuthGuard, RolesGuard)
+- Jika user.role tidak termasuk requiredRoles -> 403 Forbidden (guard return false)
+
+Update Existing User jadi Admin (DB langsung):
+  UPDATE "User" SET role='admin' WHERE email='admin@example.com';
+  -- atau via API PATCH /users/:id
+
+6. TROUBLESHOOTING
+----------------------------------------------------
+- 401 Invalid credentials -> cek email/password, pastikan user sudah register via POST /users
+- 401 Unauthorized di endpoint terproteksi -> pastikan header "Authorization: Bearer <token>" benar, tanpa typo
+- Token expired -> login ulang, dapat token baru
+- Validasi 400 -> cek body sesuai DTO (email format, password min 6 char saat register, role harus admin|user)
+- 403 Forbidden -> role tidak punya akses, cek @Roles() dan token role (decode JWT)
+- Role tidak muncul di response -> pastikan prisma generate sudah jalan (npx prisma generate) dan migration sudah apply
+

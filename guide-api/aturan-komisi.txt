@@ -1,0 +1,134 @@
+========================================
+API ATURAN-KOMISI - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /aturan-komisi butuh JWT (guard global APP_GUARD JwtAuthGuard).
+Ambil token via login:
+
+  POST /auth/login
+  Content-Type: application/json
+  {
+    "email": "admin@example.com",
+    "password": "secret123"
+  }
+  Response 200: { "access_token": "eyJhbGciOi..." }
+
+Pakai di header untuk setiap request:
+  Authorization: Bearer <access_token>
+Tanpa header -> 401 Unauthorized
+
+2. ENDPOINTS
+------------
+
+a) GET /aturan-komisi
+   Deskripsi : Ambil semua aturan komisi, urut idAturan DESC
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/aturan-komisi
+
+   Response 200:
+   [
+     { "idAturan": 2, "namaPeran": "CODJual", "persentase": "15.00", "statusAktif": true },
+     { "idAturan": 1, "namaPeran": "PencariBarang", "persentase": "10.50", "statusAktif": true }
+   ]
+   Catatan: persentase dikembalikan sebagai string karena Decimal(5,2) Prisma.
+
+b) POST /aturan-komisi
+   Deskripsi : Buat aturan komisi baru
+   Auth      : Bearer JWT
+   Body:
+     {
+       "namaPeran": "string required max 50",
+       "persentase": "number 0-100 max 2 decimal required",
+       "statusAktif": "boolean optional default true"
+     }
+   cURL:
+     curl -X POST http://localhost:3000/aturan-komisi \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaPeran":"PencariBarang","persentase":10.5}'
+
+     curl dengan statusAktif false:
+     curl -X POST http://localhost:3000/aturan-komisi \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaPeran":"CODBeli","persentase":7.25,"statusAktif":false}'
+
+   Response 201:
+   { "idAturan": 1, "namaPeran": "PencariBarang", "persentase": "10.50", "statusAktif": true }
+
+   Error 400 validasi:
+   { "message": ["namaPeran should not be empty"], "statusCode": 400 }
+   { "message": ["persentase must not be greater than 100"], "statusCode": 400 }
+   { "message": ["persentase must not be less than 0"], "statusCode": 400 }
+   { "message": ["persentase must be a number conforming to the specified constraints"], "statusCode": 400 }
+
+c) PATCH /aturan-komisi/:id
+   Deskripsi : Update aturan komisi by id (partial, semua field optional)
+   Auth      : Bearer JWT
+   Body: sama seperti POST tapi semua optional
+   cURL:
+     curl -X PATCH http://localhost:3000/aturan-komisi/1 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"persentase":12.75}'
+
+     curl update nama + status:
+     curl -X PATCH http://localhost:3000/aturan-komisi/1 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaPeran":"PencariBarang Updated","statusAktif":false}'
+
+   Response 200:
+   { "idAturan": 1, "namaPeran": "PencariBarang Updated", "persentase": "12.75", "statusAktif": false }
+
+   Error 404 jika id tidak ada:
+   { "message": "Aturan komisi tidak ditemukan", "statusCode": 404 }
+
+   Error 400 jika id bukan angka:
+   { "message": "Validation failed (numeric string is expected)", "statusCode": 400 }
+
+3. VALIDATION
+-------------
+- Global ValidationPipe (whitelist:true, transform:true) -> field extra di-strip
+- namaPeran: @IsString @IsNotEmpty @MaxLength(50)
+- persentase: @IsNumber(maxDecimalPlaces:2) @Min(0) @Max(100)
+- statusAktif: @IsBoolean @IsOptional (default true jika tidak dikirim saat POST)
+- :id pakai ParseIntPipe -> harus integer
+
+4. CONTOH LENGKAP (PowerShell)
+------------------------------
+# login
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@example.com","password":"secret123"}'
+$token = $login.access_token
+$headers = @{ Authorization = "Bearer $token" }
+
+# get all
+Invoke-RestMethod -Uri http://localhost:3000/aturan-komisi -Headers $headers
+
+# create
+Invoke-RestMethod -Uri http://localhost:3000/aturan-komisi -Method Post -Headers $headers -ContentType "application/json" -Body '{"namaPeran":"PencariBarang","persentase":10.5}'
+Invoke-RestMethod -Uri http://localhost:3000/aturan-komisi -Method Post -Headers $headers -ContentType "application/json" -Body '{"namaPeran":"CODJual","persentase":15,"statusAktif":true}'
+
+# update
+Invoke-RestMethod -Uri http://localhost:3000/aturan-komisi/1 -Method Patch -Headers $headers -ContentType "application/json" -Body '{"persentase":12.75,"statusAktif":false}'
+
+5. CONTOH FETCH (JavaScript)
+-----------------------------
+const token = "eyJhbGci...";
+const headers = { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
+
+await fetch("http://localhost:3000/aturan-komisi", { headers });
+await fetch("http://localhost:3000/aturan-komisi", { method:"POST", headers, body: JSON.stringify({namaPeran:"PencariBarang", persentase:10.5}) });
+await fetch("http://localhost:3000/aturan-komisi/1", { method:"PATCH", headers, body: JSON.stringify({persentase:12.75, statusAktif:false}) });
+
+6. CATATAN
+----------
+- Table: master_aturan_komisi (idAturan PK autoincrement, namaPeran varchar(50), persentase decimal(5,2), statusAktif boolean default true) - prisma/schema.prisma:62
+- Hanya 3 endpoint yang tersedia sesuai spec: GET /, POST /, PATCH /:id (tidak ada GET/:id dan DELETE)
+- Swagger UI di /api grouping "aturan-komisi" dengan lock icon, Authorize dengan Bearer token
+- PORT default 3000 (src/main.ts:30)

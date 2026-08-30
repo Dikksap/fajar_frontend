@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LuxeInventory - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#c0c7dc",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#8bd6b6",
+                      "secondary-fixed": "#ffddb8",
+                      "surface-container-low": "#f3f4f5",
+                      "tertiary-container": "#4c5364",
+                      "error": "#ba1a1a",
+                      "surface-container": "#edeeef",
+                      "tertiary-fixed": "#dce2f7",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-secondary-container": "#684000",
+                      "surface-bright": "#f8f9fa",
+                      "primary-fixed": "#a6f2d1",
+                      "on-surface": "#191c1d",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "secondary": "#855300",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "on-primary-fixed-variant": "#00513b",
+                      "on-tertiary-fixed-variant": "#404758",
+                      "surface": "#f8f9fa",
+                      "primary-fixed-dim": "#8bd6b6",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#d9dadb",
+                      "tertiary": "#353c4c",
+                      "on-background": "#191c1d",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#004532",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#3f4944",
+                      "on-tertiary-fixed": "#141b2b",
+                      "outline": "#6f7973",
+                      "on-primary-container": "#8bd6b7",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-secondary": "#ffffff",
+                      "primary-container": "#065f46",
+                      "background": "#f8f9fa",
+                      "surface-variant": "#e1e3e4",
+                      "on-secondary-fixed": "#2a1700",
+                      "secondary-container": "#fea619",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#2e3132",
+                      "tertiary-fixed-dim": "#c0c6db",
+                      "on-primary-fixed": "#002116",
+                      "surface-tint": "#1b6b51",
+                      "outline-variant": "#bec9c2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "base": "4px",
+                      "xl": "40px",
+                      "sm": "8px",
+                      "lg": "24px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-xs": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-xs": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .ambient-shadow-sm { box-shadow: 0px 2px 4px rgba(0,0,0,0.05); }
+          .ambient-shadow-md { box-shadow: 0px 10px 15px rgba(0,0,0,0.08); }
+          .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+          .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+          
+          /* Sidebar Transitions */
+          .sidebar-transition {
+              transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+          }
+          .main-transition {
+              transition: margin-left 0.3s ease-in-out;
+          }
+          
+          /* Submenu animations */
+          .submenu-content {
+              max-height: 0;
+              overflow: hidden;
+              transition: max-height 0.3s ease-out;
+          }
+          .submenu-content.open {
+              max-height: 200px; /* Adjust based on content */
+          }
+          .submenu-icon {
+              transition: transform 0.3s ease;
+          }
+          .submenu-icon.open {
+              transform: rotate(180deg);
+          }
+          
+          /* Collapsed state styles */
+          .sidebar-collapsed .text-hide {
+              display: none;
+          }
+          .sidebar-collapsed .logo-img {
+              margin: 0 auto;
+          }
+          .sidebar-collapsed .nav-item {
+              justify-content: center;
+              padding-left: 0;
+              padding-right: 0;
+          }
+          .sidebar-collapsed .nav-item span:first-child {
+              margin-right: 0;
+          }
+          .sidebar-collapsed .submenu-icon {
+              display: none;
+          }
+          .sidebar-collapsed .submenu-content {
+              display: none; /* Hide submenus completely when collapsed */
+          }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen overflow-x-hidden antialiased flex">
+<!-- SideNavBar -->
+<aside class="sidebar-transition fixed left-0 top-0 h-full flex flex-col py-lg w-64 z-40 bg-surface border-r border-outline-variant pt-[88px] -translate-x-full md:translate-x-0" id="sidebar">
+<div class="px-lg mb-lg flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<img alt="Corporate Logo" class="logo-img w-10 h-10 rounded-DEFAULT object-cover" data-alt="A minimalist corporate logo design for an inventory management system. It features a geometric, abstract representation of a box or microchip in solid emerald green and dark gray. The design is sleek, high-end, and perfectly isolated on a crisp white background, evoking premium electronics and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTDXqPTA4BBmC6mORmRV6QuYHaqiXta5sOMfx4f536jLSeYudvNgbUba3D95UpQc8sGZjiuCUBfMAGzkRKDqroWVgw_xlAMd2k49f9A7M5YLwWRqSi8XWYZeztySwqwdJ35BMoejC90uc6-onFedX5AaHng2t8SCYLTuEe7Uh4fXyDAToKJokir913ak2cUA6oCptn7tPnN19vtHcLpx-spDjCCHM2vLsvX3hfFzuDp8qR5BA7dSYwRQ"/>
+<div class="text-hide">
+<div class="font-label-sm text-label-sm font-bold text-on-surface">Inventory Pro</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-[12px]">Premium Electronics</div>
+</div>
+</div>
+</div>
+<div class="px-lg mb-lg">
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-sm px-md rounded-DEFAULT hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-95 flex items-center justify-center gap-xs shadow-sm nav-item">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="text-hide">Tambah Produk</span>
+</button>
+</div>
+<nav class="flex-1 px-sm flex flex-col gap-xs overflow-y-auto">
+<a class="flex items-center gap-md px-md py-sm bg-primary-container text-on-primary-container rounded-lg font-bold font-label-sm text-label-sm transition-all active:scale-95 nav-item" href="#">
+<span class="material-symbols-outlined filled" data-icon="dashboard">dashboard</span>
+<span class="text-hide">Dashboard</span>
+</a>
+<!-- Grouped Navigation: Inventaris -->
+<div>
+<button class="w-full flex items-center justify-between px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item group" onclick="toggleSubmenu('submenu-inventaris', 'icon-inventaris')">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-hide">Inventaris</span>
+</div>
+<span class="material-symbols-outlined submenu-icon text-[18px]" id="icon-inventaris">expand_more</span>
+</button>
+<div class="submenu-content pl-xl flex flex-col gap-xs mt-xs" id="submenu-inventaris">
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm py-xs block" href="#">Tingkat Stok</a>
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm py-xs block" href="#">Daftar Produk</a>
+</div>
+</div>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-hide">Analitik</span>
+</a>
+<!-- Grouped Navigation: Pesanan -->
+<div>
+<button class="w-full flex items-center justify-between px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item group" onclick="toggleSubmenu('submenu-pesanan', 'icon-pesanan')">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="text-hide">Pesanan</span>
+</div>
+<span class="material-symbols-outlined submenu-icon text-[18px]" id="icon-pesanan">expand_more</span>
+</button>
+<div class="submenu-content pl-xl flex flex-col gap-xs mt-xs" id="submenu-pesanan">
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm py-xs block" href="#">Pesanan Baru</a>
+<a class="text-on-surface-variant hover:text-primary font-label-sm text-label-sm py-xs block" href="#">Riwayat Pesanan</a>
+</div>
+</div>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-hide">Staf</span>
+</a>
+</nav>
+<div class="px-sm mt-auto flex flex-col gap-xs pt-lg border-t border-outline-variant mx-lg">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="text-hide">Pusat Bantuan</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-sm text-label-sm transition-all active:scale-95 nav-item" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-hide">Keluar</span>
+</a>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<div class="flex-1 flex flex-col min-h-screen main-transition md:ml-64" id="main-content">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-lg h-16 bg-surface-container-lowest border-b border-outline-variant shadow-sm transition-colors pl-4 md:pl-0" style="padding-left: max(1rem, env(safe-area-inset-left));">
+<div class="flex items-center gap-md md:pl-[272px] pl-2 main-transition" id="header-left">
+<button class="p-sm -ml-sm rounded-DEFAULT hover:bg-surface-container-low transition-colors text-on-surface-variant md:hidden" id="mobile-menu-btn">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<button class="hidden md:block p-sm -ml-sm rounded-DEFAULT hover:bg-surface-container-low transition-colors text-on-surface-variant" id="desktop-menu-btn">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight hidden sm:block">LuxeInventory</span>
+</div>
+<div class="flex items-center gap-xs sm:gap-md">
+<div class="relative hidden sm:flex items-center group">
+<span class="material-symbols-outlined absolute left-sm text-on-surface-variant pointer-events-none">search</span>
+<input class="pl-xl pr-sm py-sm rounded-DEFAULT border border-outline-variant bg-surface-bright focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-body-md font-body-md w-48 md:w-64" placeholder="Cari inventaris..." type="text"/>
+</div>
+<button class="sm:hidden p-sm rounded-DEFAULT hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-sm rounded-DEFAULT hover:bg-surface-container-low transition-colors text-on-surface-variant active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-sm rounded-DEFAULT hover:bg-surface-container-low transition-colors text-on-surface-variant active:opacity-80 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="Administrator Profile" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-outline-variant ml-xs sm:ml-sm" data-alt="A professional close-up portrait of a female administrator in a modern corporate setting. She is wearing subtle, elegant business attire. The background is slightly blurred showing a bright, high-end retail environment. The lighting is soft and flattering, creating a polished, trustworthy corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXQx-J_vAZGErgekgdTOHU5voAc8S3s-NUv2K7y9Y2AtWbY8J5eBXBzZC-R3Qxg9nsCLnC0-RJ6mja94wKu-se6rw0eeknh6lc-Je8KB70fI0nRH-mXdb8WRpJz84a2pPA6wm5oWb9XkYqNlpN7FmD7Ia55WI9gPDHS3RUPG9O4Dfru87YNBAswUyyhpk6ME7HhBjJ_knRHBvbFziKQVWkFw8Z1QX-oFbZ3am7xor207sA9-cSy30EIA"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 md:pt-24 px-md md:px-xl pb-xl max-w-container-max mx-auto w-full flex-1">
+<!-- Header -->
+<div class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-xs">Ikhtisar Dashboard</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Metrik inventaris real-time untuk perangkat premium.</p>
+</div>
+<div class="flex gap-sm">
+<button class="bg-surface-container-lowest border border-primary text-primary font-label-sm text-label-sm py-sm px-md rounded-DEFAULT hover:bg-surface-container-low transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                    Ekspor Laporan
+                </button>
+</div>
+</div>
+<!-- Bento Grid: Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-xl">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest p-md rounded-lg ambient-shadow-sm border border-outline-variant/30 flex flex-col justify-between group hover:ambient-shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Stok</span>
+<div class="bg-primary/10 p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">4.289</div>
+<div class="font-body-md text-body-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="">+12% dari bulan lalu</span>
+</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest p-md rounded-lg ambient-shadow-sm border border-outline-variant/30 flex flex-col justify-between group hover:ambient-shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Peringatan Stok Rendah</span>
+<div class="bg-secondary-container/20 p-sm rounded-full text-secondary-container">
+<span class="material-symbols-outlined">warning</span>
+</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">14</div>
+<div class="font-body-md text-body-md text-secondary-container flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span class="">Butuh tindakan segera</span>
+</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest p-md rounded-lg ambient-shadow-sm border border-outline-variant/30 flex flex-col justify-between group hover:ambient-shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Nilai</span>
+<div class="bg-primary/10 p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">Rp.4.2M</div>
+<div class="font-body-md text-body-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">account_balance</span>
+<span class="">Estimasi nilai ritel</span>
+</div>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="bg-surface-container-lowest p-md rounded-lg ambient-shadow-sm border border-outline-variant/30 flex flex-col justify-between group hover:ambient-shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Penjualan Terbaru (7h)</span>
+<div class="bg-primary/10 p-sm rounded-full text-primary">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface mb-xs">342</div>
+<div class="font-body-md text-body-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="">+5% vs minggu sebelumnya</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Financial Charts Section -->
+<div class="mb-xl bg-surface-container-lowest rounded-lg ambient-shadow-sm border border-outline-variant/30 p-md">
+<div class="flex justify-between items-center mb-md pb-sm border-b border-outline-variant/50">
+<h2 class="font-headline-md text-headline-md text-on-surface">Performa Keuangan</h2>
+</div>
+<div class="w-full h-80 relative">
+<canvas id="financialChart"></canvas>
+</div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        const financialChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Total Pendapatan',
+                        data: [120000, 150000, 130000, 170000, 160000, 190000],
+                        backgroundColor: '#065f46',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Total Pengeluaran',
+                        data: [80000, 90000, 85000, 100000, 95000, 110000],
+                        backgroundColor: '#94a3b8', // neutral slate
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Laba Kotor',
+                        data: [40000, 60000, 45000, 70000, 65000, 80000],
+                        backgroundColor: '#fbbf24', // golden yellow
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#e1e3e4' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Inter', size: 14 }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Main Table Area -->
+<div class="lg:col-span-2 bg-surface-container-lowest rounded-lg ambient-shadow-sm border border-outline-variant/30 p-md flex flex-col">
+<div class="flex justify-between items-center mb-md pb-sm border-b border-outline-variant/50">
+<h2 class="font-headline-md text-headline-md text-on-surface">Inventaris Terbaru</h2>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Lihat Semua</button>
+</div>
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="bg-surface-bright border-b border-outline-variant/50">
+<th class="py-sm px-sm font-label-xs text-label-xs text-on-surface-variant uppercase">Model</th>
+<th class="py-sm px-sm font-label-xs text-label-xs text-on-surface-variant uppercase">SKU</th>
+<th class="py-sm px-sm font-label-xs text-label-xs text-on-surface-variant uppercase">Stok</th>
+<th class="py-sm px-sm font-label-xs text-label-xs text-on-surface-variant uppercase">Harga</th>
+<th class="py-sm px-sm font-label-xs text-label-xs text-on-surface-variant uppercase">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="py-sm px-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-bright rounded-DEFAULT flex items-center justify-center p-xs border border-outline-variant/30">
+<img alt="iPhone 15 Pro" class="h-full object-contain mix-blend-multiply" data-alt="A clean, minimalist product shot of an iPhone 15 Pro in Titanium. The phone is shown floating slightly on a stark white background with a soft, diffused drop shadow. The lighting highlights the brushed titanium edges and the triple camera array. High-end retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFeKVz4NDJN1-ohEZBMAxQIFqpKXqKUgAPXuLiY5Sz-2DxggKaYgEBqkGhQyNYjDXnSkaZNgPXRsyR2ngPsIE9ivZhvUhfXcflCEC2hpuq7TWW6SIWLLcU2EuyiTWpT0fWOn_adWdMaZssaY0hycLfi7EI_H1HhRptprDouM1xAOCMiQ5fD-WGcPdUfwg4t2XMVs8octBfuq5mpZL33nis3dkwuVV5XHysxkFpq8pqJD2a1MBwn_RPng"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">iPhone 15 Pro</span>
+</div>
+</td>
+<td class="py-sm px-sm text-on-surface-variant text-[13px] font-mono">APL-15P-256-TIT</td>
+<td class="py-sm px-sm text-on-surface">245</td>
+<td class="py-sm px-sm font-body-md text-primary">$999</td>
+<td class="py-sm px-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold bg-primary/10 text-primary">Tersedia</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="py-sm px-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-bright rounded-DEFAULT flex items-center justify-center p-xs border border-outline-variant/30">
+<img alt="iPhone 15" class="h-full object-contain mix-blend-multiply" data-alt="A clean, minimalist product shot of an iPhone 15 in Blue. The phone is shown floating slightly on a stark white background with a soft, diffused drop shadow. The lighting highlights the pastel blue matte glass finish. High-end retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC4cNr1qYw9kWH5gZkeiwxJ3FOZzYJRBY6xN64-JUMaDQvAc9jOER1kPEwvfJj9jXqjDN15KPsGJpQFEP1YCQj2Yvw8wGDvRhvoLmf6AhzPcD8kP09toyPzvJWlYr-hYd3twVzEyE82rPV5o_fgw0d5f71OUj83e0N96tz_99MJE5s9feHSvzA5ByNJVXd7hxHa9AXa227oHwfIhNzFDgNSfvR7-5gQkTAn375xhR4svRQGMin7em5kw"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">iPhone 15</span>
+</div>
+</td>
+<td class="py-sm px-sm text-on-surface-variant text-[13px] font-mono">APL-15-128-BLU</td>
+<td class="py-sm px-sm text-on-surface">42</td>
+<td class="py-sm px-sm font-body-md text-primary">$799</td>
+<td class="py-sm px-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold bg-secondary-container/20 text-secondary-container">Stok Rendah</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="py-sm px-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-bright rounded-DEFAULT flex items-center justify-center p-xs border border-outline-variant/30">
+<img alt="iPhone 14 Pro Max" class="h-full object-contain mix-blend-multiply" data-alt="A clean, minimalist product shot of an iPhone 14 Pro Max in Deep Purple. The phone is shown floating slightly on a stark white background with a soft, diffused drop shadow. The lighting highlights the glossy stainless steel edges and the deep purple glass back. High-end retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRS3U8Tx0AGjiHcUcC7ksgDu6wY9cMHPaGt2ffDFhkPHM1H586qTQ4epWHYCRbbh8zekncAPkUoeEbkBxfhtgaq_Zu3Z3NLxVBvgVz2yVst5z0SkTUT77EX9e6QtF9naGEcgXa2f2GtxDT315YtdtqKwUxE2V_ORY7_EEYtyihQtyih2AOe-66yiLPZnUKWqDx7A0ir5B8Z6XYYJOBMFHD3mOHUpr_tRqdwY2BWHUvtkdfF5gIw1HjOQ"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">iPhone 14 Pro Max</span>
+</div>
+</td>
+<td class="py-sm px-sm text-on-surface-variant text-[13px] font-mono">APL-14PM-512-PUR</td>
+<td class="py-sm px-sm text-on-surface">18</td>
+<td class="py-sm px-sm font-body-md text-primary">$1099</td>
+<td class="py-sm px-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold bg-secondary-container/20 text-secondary-container">Stok Rendah</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="py-sm px-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-bright rounded-DEFAULT flex items-center justify-center p-xs border border-outline-variant/30">
+<img alt="iPhone 14" class="h-full object-contain mix-blend-multiply" data-alt="A clean, minimalist product shot of an iPhone 14 in Midnight. The phone is shown floating slightly on a stark white background with a soft, diffused drop shadow. The lighting highlights the glossy dark glass finish. High-end retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBENZQLrRG6cLc0A65F1nDPH8l8Kj4iRGldBspkHSuZrSesrB4DH0SllDQ7ZV0SgGngbszHef2XPaK10WYLWVox1eOd43Nm-2eljBasjHSF0meVgGfWG2w5PDmMW_e5FDPFvUhLx44FWr7HW3wLZH4u7LyZcUP1L7D4xlJsQCXyx6vXCy1nr2R9GHkzp_NqbJ0u_rsPoCMAO3TiHp8ny-uT1FsE95LCakDii8Dyxubh6ajlvkipMj0ucA"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface group-hover:text-primary transition-colors">iPhone 14</span>
+</div>
+</td>
+<td class="py-sm px-sm text-on-surface-variant text-[13px] font-mono">APL-14-128-MID</td>
+<td class="py-sm px-sm text-on-surface">312</td>
+<td class="py-sm px-sm font-body-md text-primary">$699</td>
+<td class="py-sm px-sm">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold bg-primary/10 text-primary">Tersedia</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Side Panel: Quick Actions & Alerts -->
+<div class="flex flex-col gap-md">
+<!-- Quick Actions -->
+<div class="bg-surface-container-lowest rounded-lg ambient-shadow-sm border border-outline-variant/30 p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm pb-sm border-b border-outline-variant/50">Aksi Cepat</h3>
+<div class="flex flex-col gap-sm">
+<button class="w-full bg-primary text-on-primary font-label-sm text-label-sm py-sm px-md rounded-DEFAULT hover:bg-primary-container transition-colors active:scale-95 flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">add_box</span>
+                             Terima Stok
+                         </button>
+<button class="w-full bg-surface-container-lowest border border-primary text-primary font-label-sm text-label-sm py-sm px-md rounded-DEFAULT hover:bg-surface-container-low transition-colors active:scale-95 flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                             Pindai Barang
+                         </button>
+<button class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-sm text-label-sm py-sm px-md rounded-DEFAULT hover:bg-surface-container-low transition-colors active:scale-95 flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">assessment</span>
+                             Buat Audit
+                         </button>
+</div>
+</div>
+<!-- Small Alert Widget -->
+<div class="bg-surface-bright rounded-lg ambient-shadow-sm border border-secondary-container/50 p-md relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[100px] text-secondary-container">warning</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-xs text-secondary-container mb-xs">
+<span class="material-symbols-outlined filled text-[18px]">error</span>
+<span class="font-label-sm text-label-sm font-bold uppercase">Peringatan Restok</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Stok iPhone 15 Pro Max (1TB) sangat rendah di 3 lokasi gudang.</p>
+<button class="text-secondary-container font-label-sm text-label-sm font-bold hover:underline">Tinjau Draf PO →</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Overlay for mobile sidebar -->
+<div class="fixed inset-0 bg-on-background/50 z-30 hidden md:hidden" id="sidebar-overlay"></div>
+<script>
+    // Submenu Toggle Logic
+    function toggleSubmenu(submenuId, iconId) {
+        const submenu = document.getElementById(submenuId);
+        const icon = document.getElementById(iconId);
+        
+        // Don't toggle if sidebar is collapsed on desktop
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar.classList.contains('sidebar-collapsed') && window.innerWidth >= 768) {
+            return;
+        }
+
+        submenu.classList.toggle('open');
+        icon.classList.toggle('open');
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const headerLeft = document.getElementById('header-left');
+        const desktopMenuBtn = document.getElementById('desktop-menu-btn');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        let isCollapsed = false;
+
+        // Desktop Toggle
+        desktopMenuBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            if (isCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+                sidebar.style.width = '80px';
+                mainContent.style.marginLeft = '80px';
+                headerLeft.style.paddingLeft = '88px';
+                
+                // Close any open submenus
+                document.querySelectorAll('.submenu-content.open').forEach(el => {
+                    el.classList.remove('open');
+                });
+                document.querySelectorAll('.submenu-icon.open').forEach(el => {
+                    el.classList.remove('open');
+                });
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.style.width = '16rem'; // 256px
+                mainContent.style.marginLeft = '16rem';
+                headerLeft.style.paddingLeft = '272px';
+            }
+            
+            // Resize chart if exists
+            setTimeout(() => {
+                if (window.Chart) {
+                    const chartInstance = Chart.getChart("financialChart");
+                    if (chartInstance) chartInstance.resize();
+                }
+            }, 300); // Wait for transition
+        });
+
+        // Mobile Toggle
+        function toggleMobileMenu() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        overlay.addEventListener('click', toggleMobileMenu);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.add('hidden');
+                
+                if (isCollapsed) {
+                    sidebar.style.width = '80px';
+                    mainContent.style.marginLeft = '80px';
+                    headerLeft.style.paddingLeft = '88px';
+                } else {
+                    sidebar.style.width = '16rem';
+                    mainContent.style.marginLeft = '16rem';
+                    headerLeft.style.paddingLeft = '272px';
+                }
+            } else {
+                sidebar.style.width = '16rem';
+                mainContent.style.marginLeft = '0';
+                headerLeft.style.paddingLeft = '0.5rem';
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('sidebar-collapsed');
+                overlay.classList.add('hidden');
+            }
+        });
+    });
+</script>
+</body></html>

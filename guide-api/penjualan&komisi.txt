@@ -1,0 +1,158 @@
+========================================
+API PENJUALAN & KOMISI - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+Prefix  : /api/penjualan dan /api/komisi (beda dengan /pegawai yang tanpa prefix)
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint butuh JWT global.
+  POST /auth/login {email,password} -> {access_token}
+  Header: Authorization: Bearer <TOKEN>
+  401 jika tanpa token
+
+2. ALUR BISNIS
+--------------
+katalog-model -> pegawai (4 orang: Seller/CodBeli/Buyer/CodJual) -> unit-hp -> pembelian -> penjualan -> komisi auto
+- Pembelian catat hargaBeli per imei5 + 2 pegawai (Seller=COD? PencariBarang, CodBeli)
+- Penjualan butuh imei5 yang sudah ada di unit_hp DAN pembelian, hitung profitKotor = hargaJual - hargaBeli (atau pakai profitKotor kiriman)
+- Saat POST penjualan, sistem auto:
+  1) create penjualan_hp
+  2) create 4 baris komisi_transaksi (PencariBarang, CODBeli, PencariPembeli, CODJual) dengan persentase dari master_aturan_komisi.statusAktif, nominal = profit * persentase /100
+  3) update unit_hp.statusStok = Terjual
+  dalam 1 transaction.
+
+Aturan persentase diambil dari tabel master_aturan_komisi where namaPeran = peranTugas dan statusAktif=true. Jika tidak ada aturan untuk peran tertentu -> persentase 0.
+
+3. PENJUALAN ENDPOINTS
+----------------------
+
+a) POST /api/penjualan
+   Body:
+   {
+     "imei5": "string required max10 FK unit_hp & pembelian",
+     "tanggalKeluar": "ISO date YYYY-MM-DD required",
+     "hargaJual": "number >=0 max 2 decimal required",
+     "profitKotor": "number optional, jika tidak dikirim auto hargaJual - hargaBeli",
+     "idPicBuyer": "int required FK pegawai (PencariPembeli)",
+     "idPicCodJual": "int required FK pegawai (CODJual)"
+   }
+   cURL:
+     curl -X POST http://localhost:3000/api/penjualan \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"imei5":"12345","tanggalKeluar":"2026-08-31","hargaJual":5000000,"idPicBuyer":3,"idPicCodJual":4}'
+
+     curl dengan profit manual:
+     curl -X POST http://localhost:3000/api/penjualan \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"imei5":"12345","tanggalKeluar":"2026-08-31","hargaJual":5000000,"profitKotor":1500000,"idPicBuyer":3,"idPicCodJual":4}'
+
+   Response 201:
+   {
+     "idPenjualan":1,"imei5":"12345","tanggalKeluar":"2026-08-31T00:00:00.000Z",
+     "hargaJual":"5000000.00","profitKotor":"1500000.00","idPicBuyer":3,"idPicCodJual":4,
+     "unitHp":{"imei5":"12345","model":{"namaModel":"iPhone 15 Pro"}},
+     "picBuyer":{"idPegawai":3,"namaPegawai":"Andi"},
+     "picCodJual":{"idPegawai":4,"namaPegawai":"Rudi"},
+     "komisiTransaksi":[
+       {"idKomisi":1,"idPegawai":1,"peranTugas":"PencariBarang","persentaseBerlaku":"10.00","nominalKomisi":"150000.00","pegawai":{"namaPegawai":"Budi"}},
+       {"idKomisi":2,"idPegawai":2,"peranTugas":"CODBeli","persentaseBerlaku":"5.00","nominalKomisi":"75000.00"},
+       {"idKomisi":3,"idPegawai":3,"peranTugas":"PencariPembeli","persentaseBerlaku":"10.00","nominalKomisi":"150000.00"},
+       {"idKomisi":4,"idPegawai":4,"peranTugas":"CODJual","persentaseBerlaku":"5.00","nominalKomisi":"75000.00"}
+     ]
+   }
+
+   Error 400 validasi, 404 unit/pembelian/pegawai tidak ada, 409 imei5 sudah terjual
+
+b) GET /api/penjualan
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/penjualan
+   Response 200: array penjualan desc, include unitHp.model + picBuyer + picCodJual + komisiTransaksi.pegawai
+
+c) GET /api/penjualan/:id
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/penjualan/1
+   Response 200: single penjualan + komisi + unitHp.pembelian
+   404 jika id tidak ada, 400 jika bukan angka
+
+4. KOMISI ENDPOINTS
+-------------------
+
+a) GET /api/komisi
+   Deskripsi: semua komisi_transaksi desc
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/komisi
+   Response 200:
+   [
+     {"idKomisi":4,"idPenjualan":1,"idPegawai":4,"peranTugas":"CODJual","persentaseBerlaku":"5.00","nominalKomisi":"75000.00","pegawai":{"namaPegawai":"Rudi"},"penjualan":{"unitHp":{"model":{}}}}
+   ]
+
+b) GET /api/komisi/summary
+   Deskripsi: ringkasan agregat (harus diakses sebelum :id agar tidak bentrok)
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/komisi/summary
+   Response 200:
+   {
+     "totalKomisi":"450000.00",
+     "totalTransaksi":4,
+     "perPegawai":[
+       {"idPegawai":1,"namaPegawai":"Budi","total":"150000.00","count":1},
+       {"idPegawai":2,"namaPegawai":"Siti","total":"75000.00","count":1}
+     ],
+     "perPeran":[
+       {"peranTugas":"PencariBarang","total":"150000.00","count":1},
+       {"peranTugas":"CODBeli","total":"75000.00","count":1}
+     ]
+   }
+   Catatan: total dalam string fixed 2 decimal karena Decimal
+
+c) GET /api/komisi/pegawai/:id
+   Deskripsi: komisi milik pegawai tertentu
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/komisi/pegawai/1
+   Response 200: array komisi where idPegawai=1, include pegawai + penjualan.unitHp.model
+   404 jika pegawai tidak ada
+
+d) GET /api/komisi/:id
+   Deskripsi: detail komisi by idKomisi
+   curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/api/komisi/1
+   Response 200: single komisi + pegawai + penjualan
+   404 jika tidak ada
+
+   URUTAN PENTING: Nest route /summary dan /pegawai/:id didefinisikan sebelum /:id agar tidak ditangkap sebagai :id
+
+5. VALIDATION
+-------------
+- imei5 @MaxLength10 @IsString @IsNotEmpty
+- tanggalKeluar @IsDateString
+- hargaJual/profitKotor @IsNumber max 2 decimal @Min0
+- idPicBuyer/idPicCodJual @IsInt @Min1 ParseIntPipe untuk :id
+
+6. POWER SHELL
+--------------
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@email.com","password":"admin123"}'
+$token=$login.access_token; $h=@{Authorization="Bearer $token"}
+
+# penjualan
+Invoke-RestMethod -Uri http://localhost:3000/api/penjualan -Headers $h -Method Post -ContentType "application/json" -Body '{"imei5":"12345","tanggalKeluar":"2026-08-31","hargaJual":5000000,"idPicBuyer":3,"idPicCodJual":4}'
+Invoke-RestMethod -Uri http://localhost:3000/api/penjualan -Headers $h
+Invoke-RestMethod -Uri http://localhost:3000/api/penjualan/1 -Headers $h
+
+# komisi
+Invoke-RestMethod -Uri http://localhost:3000/api/komisi -Headers $h
+Invoke-RestMethod -Uri http://localhost:3000/api/komisi/summary -Headers $h
+Invoke-RestMethod -Uri http://localhost:3000/api/komisi/pegawai/1 -Headers $h
+Invoke-RestMethod -Uri http://localhost:3000/api/komisi/1 -Headers $h
+
+7. FETCH JS
+-----------
+const h={"Authorization":`Bearer ${token}`,"Content-Type":"application/json"};
+await fetch("http://localhost:3000/api/penjualan",{method:"POST",headers:h,body:JSON.stringify({imei5:"12345",tanggalKeluar:"2026-08-31",hargaJual:5000000,idPicBuyer:3,idPicCodJual:4})});
+await fetch("http://localhost:3000/api/penjualan",{headers:h});
+await fetch("http://localhost:3000/api/komisi/summary",{headers:h});
+
+8. CATATAN
+----------
+- Table penjualan_hp imei5 unique FK unit_hp Cascade, profitKotor Decimal(12,2)
+- Komisi 4 baris per penjualan, jika master_aturan_komisi kosong -> komisi 0
+- Aturan: namaPeran di master harus sama persis dengan enum PeranTugas (PencariBarang,CODBeli,PencariPembeli,CODJual) agar ter-map
+- Swagger grouping "penjualan" dan "komisi", Authorize Bearer
+- Hanya 3 endpoint penjualan + 4 endpoint komisi sesuai spec, tanpa DELETE/PATCH untuk keduanya

@@ -1,0 +1,148 @@
+========================================
+API PEGAWAI - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /pegawai butuh JWT (guard global).
+Ambil token via login:
+
+  POST /auth/login
+  Content-Type: application/json
+
+  {
+    "email": "admin@example.com",
+    "password": "secret123"
+  }
+
+  Response 200:
+  {
+    "access_token": "eyJhbGciOi..."
+  }
+
+Pakai di header untuk setiap request pegawai:
+  Authorization: Bearer <access_token>
+
+Tanpa header -> 401 Unauthorized
+
+2. ENDPOINTS
+------------
+
+a) GET /pegawai
+   Deskripsi : Ambil semua pegawai, urut idPegawai DESC
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/pegawai
+
+   Response 200:
+   [
+     { "idPegawai": 2, "namaPegawai": "Siti" },
+     { "idPegawai": 1, "namaPegawai": "Budi Santoso" }
+   ]
+
+b) GET /pegawai/:id
+   Deskripsi : Ambil pegawai by id
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/pegawai/1
+
+   Response 200:
+   { "idPegawai": 1, "namaPegawai": "Budi Santoso" }
+
+   Error 404 jika tidak ada:
+   { "message": "Pegawai tidak ditemukan", "error": "Not Found", "statusCode": 404 }
+
+   Error 400 jika id bukan angka:
+   { "message": "Validation failed (numeric string is expected)", "statusCode": 400 }
+
+c) POST /pegawai
+   Deskripsi : Buat pegawai baru
+   Auth      : Bearer JWT
+   Body      : { "namaPegawai": "string, required, max 50, unique" }
+   cURL:
+     curl -X POST http://localhost:3000/pegawai \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaPegawai":"Budi Santoso"}'
+
+   Response 201:
+   { "idPegawai": 1, "namaPegawai": "Budi Santoso" }
+
+   Error 400 jika kosong/melebihi 50 char:
+   { "message": ["namaPegawai should not be empty", "namaPegawai must be shorter than or equal to 50 characters"], "statusCode": 400 }
+
+   Error 409 jika duplikat nama:
+   { "message": "Nama pegawai sudah terdaftar", "statusCode": 409 }
+
+d) PATCH /pegawai/:id
+   Deskripsi : Update pegawai (partial)
+   Auth      : Bearer JWT
+   Body      : { "namaPegawai": "optional" }
+   cURL:
+     curl -X PATCH http://localhost:3000/pegawai/1 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaPegawai":"Budi Updated"}'
+
+   Response 200:
+   { "idPegawai": 1, "namaPegawai": "Budi Updated" }
+
+   Error 404/409 sama seperti di atas
+
+e) DELETE /pegawai/:id
+   Deskripsi : Hapus pegawai
+   Auth      : Bearer JWT
+   cURL:
+     curl -X DELETE -H "Authorization: Bearer <TOKEN>" http://localhost:3000/pegawai/1
+
+   Response 200:
+   { "message": "Pegawai deleted successfully" }
+
+   Error 404 jika id tidak ada
+
+3. VALIDATION
+-------------
+- Global ValidationPipe aktif (whitelist:true, transform:true) -> field extra di-strip
+- namaPegawai: @IsString @IsNotEmpty @MaxLength(50)
+- :id pakai ParseIntPipe -> harus integer
+
+4. CONTOH LENGKAP (PowerShell)
+------------------------------
+# login
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@example.com","password":"secret123"}'
+$token = $login.access_token
+$headers = @{ Authorization = "Bearer $token" }
+
+# create
+Invoke-RestMethod -Uri http://localhost:3000/pegawai -Method Post -Headers $headers -ContentType "application/json" -Body '{"namaPegawai":"Budi Santoso"}'
+
+# get all
+Invoke-RestMethod -Uri http://localhost:3000/pegawai -Headers $headers
+
+# get one
+Invoke-RestMethod -Uri http://localhost:3000/pegawai/1 -Headers $headers
+
+# update
+Invoke-RestMethod -Uri http://localhost:3000/pegawai/1 -Method Patch -Headers $headers -ContentType "application/json" -Body '{"namaPegawai":"Budi Updated"}'
+
+# delete
+Invoke-RestMethod -Uri http://localhost:3000/pegawai/1 -Method Delete -Headers $headers
+
+5. CONTOH FETCH (JavaScript)
+-----------------------------
+const token = "eyJhbGci...";
+const headers = { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
+
+await fetch("http://localhost:3000/pegawai", { headers });
+await fetch("http://localhost:3000/pegawai/1", { headers });
+await fetch("http://localhost:3000/pegawai", { method:"POST", headers, body: JSON.stringify({namaPegawai:"Budi"}) });
+await fetch("http://localhost:3000/pegawai/1", { method:"PATCH", headers, body: JSON.stringify({namaPegawai:"Budi Updated"}) });
+await fetch("http://localhost:3000/pegawai/1", { method:"DELETE", headers });
+
+6. CATATAN
+----------
+- Table: pegawai (idPegawai PK autoincrement, namaPegawai varchar(50) unique) - prisma/schema.prisma:38
+- Relasi: dipakai di PembelianHp (Seller/CodBeli) dan PenjualanHp (Buyer/CodJual) -> hapus pegawai yang masih dipakai akan error FK constraint
+- Swagger UI di /api sudah ada grouping "pegawai" dengan lock icon, klik Authorize masukkan Bearer token

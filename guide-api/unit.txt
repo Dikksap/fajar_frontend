@@ -1,0 +1,164 @@
+========================================
+API UNIT-HP - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /unit-hp butuh JWT (APP_GUARD JwtAuthGuard global).
+Ambil token:
+
+  POST /auth/login
+  Content-Type: application/json
+  { "email":"admin@example.com", "password":"secret123" }
+  Response 200: { "access_token":"eyJhbGciOi..." }
+
+Header tiap request:
+  Authorization: Bearer <access_token>
+Tanpa header -> 401 Unauthorized
+
+2. ENDPOINTS
+------------
+
+a) POST /unit-hp
+   Deskripsi : Buat unit HP baru (PK imei5)
+   Auth      : Bearer JWT
+   Body:
+     {
+       "imei5": "string required max 10",        // PK, contoh "12345" atau "A1B2C3D4E5"
+       "idModel": "int required",                 // FK ke katalog_model.idModel
+       "kapasitasGb": "int optional",             // contoh 128, 256
+       "warna": "string optional max 30",         // contoh "Hitam"
+       "regionGaransi": "string optional max 20 default Inter",
+       "batteryHealth": "int optional",           // 0-100
+       "keteranganKondisi": "string optional",    // contoh "Mulus 95%"
+       "statusStok": "enum optional Tersedia|Terjual|Retur default Tersedia"
+     }
+   cURL minimal:
+     curl -X POST http://localhost:3000/unit-hp \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"imei5":"12345","idModel":1}'
+
+   cURL lengkap:
+     curl -X POST http://localhost:3000/unit-hp \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"imei5":"54321","idModel":2,"kapasitasGb":256,"warna":"Titanium","regionGaransi":"Inter","batteryHealth":95,"keteranganKondisi":"Mulus","statusStok":"Tersedia"}'
+
+   Response 201 (include model):
+   {
+     "imei5":"12345","idModel":1,"kapasitasGb":null,"warna":null,
+     "regionGaransi":"Inter","batteryHealth":null,"keteranganKondisi":null,
+     "statusStok":"Tersedia",
+     "model":{"idModel":1,"namaModel":"iPhone 15 Pro"}
+   }
+
+   Error 400 validasi:
+   { "message":["imei5 should not be empty","imei5 must be shorter than or equal to 10 characters"], "statusCode":400 }
+   { "message":["idModel must be an integer number"], "statusCode":400 }
+
+   Error 409 duplikat imei5:
+   { "message":"imei5 sudah terdaftar", "statusCode":409 }
+
+   Error 404 FK idModel tidak ada:
+   { "message":"idModel tidak ditemukan (FK katalog_model)", "statusCode":404 }
+
+b) GET /unit-hp
+   Deskripsi : Ambil semua unit HP, order imei5 DESC, include model
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/unit-hp
+
+   Response 200:
+   [
+     { "imei5":"54321","idModel":2,"statusStok":"Tersedia","model":{"idModel":2,"namaModel":"Samsung S24"} },
+     { "imei5":"12345","idModel":1,"statusStok":"Tersedia","model":{"idModel":1,"namaModel":"iPhone 15 Pro"} }
+   ]
+
+c) GET /unit-hp/:imei5
+   Deskripsi : Detail unit by imei5, include model + pembelian + penjualan
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/unit-hp/12345
+
+   Response 200:
+   {
+     "imei5":"12345","idModel":1,"kapasitasGb":128,"warna":"Hitam",
+     "regionGaransi":"Inter","batteryHealth":95,"keteranganKondisi":"Mulus",
+     "statusStok":"Tersedia",
+     "model":{"idModel":1,"namaModel":"iPhone 15 Pro"},
+     "pembelian": null,
+     "penjualan": null
+   }
+
+   Error 404:
+   { "message":"Unit HP tidak ditemukan", "statusCode":404 }
+
+d) PATCH /unit-hp/:imei5
+   Deskripsi : Update unit (partial, imei5 tidak bisa diubah)
+   Auth      : Bearer JWT
+   Body: semua field optional kecuali imei5 di-ignore (idModel,kapasitasGb,warna,regionGaransi,batteryHealth,keteranganKondisi,statusStok)
+   cURL:
+     curl -X PATCH http://localhost:3000/unit-hp/12345 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"warna":"Putih","batteryHealth":90,"statusStok":"Terjual"}'
+
+     curl ganti model:
+     curl -X PATCH http://localhost:3000/unit-hp/12345 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"idModel":2}'
+
+   Response 200 (include model):
+   { "imei5":"12345","idModel":1,"warna":"Putih","batteryHealth":90,"statusStok":"Terjual","model":{...} }
+
+   Error 404 jika imei5 tidak ada
+   Error 404 jika idModel FK tidak ada
+
+3. VALIDATION
+-------------
+- Global ValidationPipe whitelist:true transform:true
+- imei5: @IsString @IsNotEmpty @MaxLength(10) - hanya di POST, PATCH tidak ada
+- idModel: @IsInt @Min(1)
+- kapasitasGb/batteryHealth: @IsInt @IsOptional
+- warna: @IsString @MaxLength(30) @IsOptional
+- regionGaransi: @IsString @MaxLength(20) @IsOptional
+- statusStok: @IsEnum(Tersedia,Terjual,Retur) @IsOptional
+- :imei5 param string (tidak pakai ParseIntPipe)
+
+4. POWER SHELL
+--------------
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@example.com","password":"secret123"}'
+$token = $login.access_token; $headers = @{ Authorization = "Bearer $token" }
+
+# create
+Invoke-RestMethod -Uri http://localhost:3000/unit-hp -Method Post -Headers $headers -ContentType "application/json" -Body '{"imei5":"12345","idModel":1}'
+Invoke-RestMethod -Uri http://localhost:3000/unit-hp -Method Post -Headers $headers -ContentType "application/json" -Body '{"imei5":"54321","idModel":2,"kapasitasGb":256,"warna":"Hitam","batteryHealth":95,"statusStok":"Tersedia"}'
+
+# get all
+Invoke-RestMethod -Uri http://localhost:3000/unit-hp -Headers $headers
+
+# get one
+Invoke-RestMethod -Uri http://localhost:3000/unit-hp/12345 -Headers $headers
+
+# update
+Invoke-RestMethod -Uri http://localhost:3000/unit-hp/12345 -Method Patch -Headers $headers -ContentType "application/json" -Body '{"warna":"Putih","statusStok":"Terjual"}'
+
+5. FETCH JS
+-----------
+const token="eyJ..."; const headers={"Authorization":`Bearer ${token}`,"Content-Type":"application/json"};
+await fetch("http://localhost:3000/unit-hp",{headers});
+await fetch("http://localhost:3000/unit-hp/12345",{headers});
+await fetch("http://localhost:3000/unit-hp",{method:"POST",headers,body:JSON.stringify({imei5:"12345",idModel:1})});
+await fetch("http://localhost:3000/unit-hp/12345",{method:"PATCH",headers,body:JSON.stringify({warna:"Putih",statusStok:"Terjual"})});
+
+6. CATATAN
+----------
+- Table unit_hp PK imei5 varchar(10), FK idModel -> katalog_model.idModel onUpdate Cascade
+- Relasi: pembelian? dan penjualan? (1-1 optional), model (N-1 wajib)
+- Hapus UnitHp akan cascade ke PembelianHp/PenjualanHp jika ada (onDelete Cascade di pembelian/penjualan, bukan di unit_hp)
+- Swagger grouping "unit-hp" lock icon, Authorize Bearer token
+- Hanya 4 endpoint sesuai spec (tidak ada DELETE)

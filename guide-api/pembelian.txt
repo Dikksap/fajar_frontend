@@ -1,0 +1,139 @@
+========================================
+API PEMBELIAN - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /pembelian butuh JWT (APP_GUARD JwtAuthGuard global).
+Login:
+
+  POST /auth/login
+  Content-Type: application/json
+  { "email":"admin@example.com", "password":"secret123" }
+  Response 200: { "access_token":"eyJhbGciOi..." }
+
+Header tiap request:
+  Authorization: Bearer <access_token>
+Tanpa header -> 401 Unauthorized
+
+2. PREREQUISITE
+---------------
+Sebelum POST pembelian, harus sudah ada:
+- UnitHp dengan imei5 tersebut (POST /unit-hp dulu)
+- Pegawai Seller & CodBeli (POST /pegawai)
+- KatalogModel untuk UnitHp
+Urutan: katalog-model -> pegawai -> unit-hp -> pembelian
+
+3. ENDPOINTS
+------------
+
+a) POST /pembelian
+   Deskripsi : Catat pembelian HP (1 unit = 1 pembelian, imei5 unique)
+   Auth      : Bearer JWT
+   Body:
+     {
+       "imei5": "string required max 10, FK unit_hp.imei5",
+       "tanggalMasuk": "string required ISO date YYYY-MM-DD",
+       "hargaBeli": "number required >=0 max 2 decimal, ex 3500000 / 3500000.50",
+       "idPicSeller": "int required FK pegawai.idPegawai (PencariBarang)",
+       "idPicCodBeli": "int required FK pegawai.idPegawai (COD Beli)"
+     }
+   cURL:
+     curl -X POST http://localhost:3000/pembelian \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"imei5":"12345","tanggalMasuk":"2026-08-30","hargaBeli":3500000,"idPicSeller":1,"idPicCodBeli":2}'
+
+   Response 201 (include relasi):
+   {
+     "idPembelian":1,"imei5":"12345","tanggalMasuk":"2026-08-30T00:00:00.000Z",
+     "hargaBeli":"3500000.00",
+     "idPicSeller":1,"idPicCodBeli":2,
+     "unitHp":{"imei5":"12345","idModel":1,"model":{"idModel":1,"namaModel":"iPhone 15 Pro"}},
+     "picSeller":{"idPegawai":1,"namaPegawai":"Budi"},
+     "picCodBeli":{"idPegawai":2,"namaPegawai":"Siti"}
+   }
+
+   Error 400 validasi:
+   { "message":["imei5 should not be empty"], "statusCode":400 }
+   { "message":["tanggalMasuk must be a valid ISO 8601 date string"], "statusCode":400 }
+   { "message":["hargaBeli must not be less than 0"], "statusCode":400 }
+
+   Error 409 duplikat imei5:
+   { "message":"imei5 sudah ada di pembelian (unique)", "statusCode":409 }
+
+   Error 404 FK:
+   { "message":"imei5 tidak ditemukan di unit_hp", "statusCode":404 }
+   { "message":"idPicSeller tidak ditemukan di pegawai", "statusCode":404 }
+   { "message":"idPicCodBeli tidak ditemukan di pegawai", "statusCode":404 }
+
+b) GET /pembelian
+   Deskripsi : Ambil semua pembelian, order idPembelian DESC, include unitHp.model + picSeller + picCodBeli
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/pembelian
+
+   Response 200:
+   [
+     {
+       "idPembelian":1,"imei5":"12345","tanggalMasuk":"2026-08-30T00:00:00.000Z",
+       "hargaBeli":"3500000.00","idPicSeller":1,"idPicCodBeli":2,
+       "unitHp":{"imei5":"12345","kapasitasGb":128,"model":{"namaModel":"iPhone 15 Pro"}},
+       "picSeller":{"idPegawai":1,"namaPegawai":"Budi"},
+       "picCodBeli":{"idPegawai":2,"namaPegawai":"Siti"}
+     }
+   ]
+
+c) GET /pembelian/:id
+   Deskripsi : Detail pembelian by idPembelian
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/pembelian/1
+
+   Response 200: sama seperti objek di array GET /pembelian
+
+   Error 400 id bukan angka:
+   { "message":"Validation failed (numeric string is expected)", "statusCode":400 }
+
+   Error 404:
+   { "message":"Pembelian tidak ditemukan", "statusCode":404 }
+
+4. VALIDATION
+-------------
+- Global ValidationPipe whitelist:true transform:true
+- imei5: @IsString @IsNotEmpty @MaxLength(10)
+- tanggalMasuk: @IsDateString (kirim "2026-08-30" atau ISO lengkap, disimpan @db.Date)
+- hargaBeli: @IsNumber maxDecimalPlaces 2 @Min(0) -> Decimal(12,2) di DB, return string "3500000.00"
+- idPicSeller/idPicCodBeli: @IsInt @Min(1)
+- :id ParseIntPipe -> harus integer
+
+5. POWER SHELL
+--------------
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@example.com","password":"secret123"}'
+$token = $login.access_token; $headers = @{ Authorization = "Bearer $token" }
+
+# create
+Invoke-RestMethod -Uri http://localhost:3000/pembelian -Method Post -Headers $headers -ContentType "application/json" -Body '{"imei5":"12345","tanggalMasuk":"2026-08-30","hargaBeli":3500000,"idPicSeller":1,"idPicCodBeli":2}'
+
+# get all
+Invoke-RestMethod -Uri http://localhost:3000/pembelian -Headers $headers
+
+# get one
+Invoke-RestMethod -Uri http://localhost:3000/pembelian/1 -Headers $headers
+
+6. FETCH JS
+-----------
+const token="eyJ..."; const headers={"Authorization":`Bearer ${token}`,"Content-Type":"application/json"};
+await fetch("http://localhost:3000/pembelian",{headers});
+await fetch("http://localhost:3000/pembelian/1",{headers});
+await fetch("http://localhost:3000/pembelian",{method:"POST",headers,body:JSON.stringify({imei5:"12345",tanggalMasuk:"2026-08-30",hargaBeli:3500000,idPicSeller:1,idPicCodBeli:2})});
+
+7. CATATAN
+----------
+- Table pembelian_hp: idPembelian PK, imei5 unique FK unit_hp onDelete Cascade, tanggalMasuk Date, hargaBeli Decimal(12,2), idPicSeller/idPicCodBeli FK pegawai
+- 1 imei5 hanya bisa 1 baris pembelian (unique)
+- Hapus UnitHp akan cascade hapus pembelian terkait
+- Swagger grouping "pembelian" lock icon, Authorize Bearer token
+- Hanya 3 endpoint sesuai spec (tidak ada PATCH/DELETE)

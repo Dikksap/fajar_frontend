@@ -1,0 +1,154 @@
+========================================
+API KATALOG-MODEL - Cara Penggunaan
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+========================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /katalog-model butuh JWT (guard global APP_GUARD JwtAuthGuard).
+Ambil token via login:
+
+  POST /auth/login
+  Content-Type: application/json
+
+  {
+    "email": "admin@example.com",
+    "password": "secret123"
+  }
+
+  Response 200:
+  {
+    "access_token": "eyJhbGciOi..."
+  }
+
+Pakai di header untuk setiap request katalog-model:
+  Authorization: Bearer <access_token>
+
+Tanpa header -> 401 Unauthorized
+  { "message": "Unauthorized", "statusCode": 401 }
+
+2. ENDPOINTS
+------------
+
+a) GET /katalog-model
+   Deskripsi : Ambil semua katalog model, urut idModel DESC
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/katalog-model
+
+   Response 200:
+   [
+     { "idModel": 2, "namaModel": "Samsung Galaxy S24" },
+     { "idModel": 1, "namaModel": "iPhone 15 Pro" }
+   ]
+
+b) GET /katalog-model/:id
+   Deskripsi : Ambil katalog model by id
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/katalog-model/1
+
+   Response 200:
+   { "idModel": 1, "namaModel": "iPhone 15 Pro" }
+
+   Error 404 jika tidak ada:
+   { "message": "Katalog model tidak ditemukan", "error": "Not Found", "statusCode": 404 }
+
+   Error 400 jika id bukan angka:
+   { "message": "Validation failed (numeric string is expected)", "statusCode": 400 }
+
+c) POST /katalog-model
+   Deskripsi : Buat katalog model baru
+   Auth      : Bearer JWT
+   Body      : { "namaModel": "string, required, max 50, unique" }
+   cURL:
+     curl -X POST http://localhost:3000/katalog-model \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaModel":"iPhone 15 Pro"}'
+
+   Response 201:
+   { "idModel": 1, "namaModel": "iPhone 15 Pro" }
+
+   Error 400 jika kosong/melebihi 50 char:
+   {
+     "message": ["namaModel should not be empty", "namaModel must be shorter than or equal to 50 characters"],
+     "statusCode": 400
+   }
+
+   Error 409 jika duplikat nama:
+   { "message": "Nama model sudah terdaftar", "statusCode": 409, "error": "Conflict" }
+
+d) PATCH /katalog-model/:id
+   Deskripsi : Update katalog model (partial)
+   Auth      : Bearer JWT
+   Body      : { "namaModel": "optional, max 50" }
+   cURL:
+     curl -X PATCH http://localhost:3000/katalog-model/1 \
+       -H "Authorization: Bearer <TOKEN>" \
+       -H "Content-Type: application/json" \
+       -d '{"namaModel":"iPhone 15 Pro Max"}'
+
+   Response 200:
+   { "idModel": 1, "namaModel": "iPhone 15 Pro Max" }
+
+   Error 404 jika id tidak ada, 409 jika nama duplikat, 400 jika validasi gagal
+
+e) DELETE /katalog-model/:id
+   Deskripsi : Hapus katalog model
+   Auth      : Bearer JWT
+   cURL:
+     curl -X DELETE -H "Authorization: Bearer <TOKEN>" http://localhost:3000/katalog-model/1
+
+   Response 200:
+   { "message": "Katalog model deleted successfully" }
+
+   Error 404 jika id tidak ada
+   Error FK jika masih dipakai UnitHp -> Prisma P2003 (Foreign key constraint failed)
+
+3. VALIDATION
+-------------
+- Global ValidationPipe aktif (whitelist:true, transform:true) -> field extra di-strip
+- namaModel: @IsString @IsNotEmpty @MaxLength(50)
+- :id pakai ParseIntPipe -> harus integer
+
+4. CONTOH LENGKAP (PowerShell)
+------------------------------
+# login
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"admin@example.com","password":"secret123"}'
+$token = $login.access_token
+$headers = @{ Authorization = "Bearer $token" }
+
+# create
+Invoke-RestMethod -Uri http://localhost:3000/katalog-model -Method Post -Headers $headers -ContentType "application/json" -Body '{"namaModel":"iPhone 15 Pro"}'
+
+# get all
+Invoke-RestMethod -Uri http://localhost:3000/katalog-model -Headers $headers
+
+# get one
+Invoke-RestMethod -Uri http://localhost:3000/katalog-model/1 -Headers $headers
+
+# update
+Invoke-RestMethod -Uri http://localhost:3000/katalog-model/1 -Method Patch -Headers $headers -ContentType "application/json" -Body '{"namaModel":"iPhone 15 Pro Max"}'
+
+# delete
+Invoke-RestMethod -Uri http://localhost:3000/katalog-model/1 -Method Delete -Headers $headers
+
+5. CONTOH FETCH (JavaScript)
+-----------------------------
+const token = "eyJhbGci...";
+const headers = { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" };
+
+await fetch("http://localhost:3000/katalog-model", { headers });
+await fetch("http://localhost:3000/katalog-model/1", { headers });
+await fetch("http://localhost:3000/katalog-model", { method:"POST", headers, body: JSON.stringify({namaModel:"iPhone 15 Pro"}) });
+await fetch("http://localhost:3000/katalog-model/1", { method:"PATCH", headers, body: JSON.stringify({namaModel:"iPhone 15 Pro Max"}) });
+await fetch("http://localhost:3000/katalog-model/1", { method:"DELETE", headers });
+
+6. CATATAN
+----------
+- Table: katalog_model (idModel PK autoincrement, namaModel varchar(50) unique) - prisma/schema.prisma:53
+- Relasi: KatalogModel 1-N UnitHp (field unitHp) -> hapus model yang masih punya unit_hp akan gagal FK
+- Swagger UI di /api sudah ada grouping "katalog-model" dengan lock icon, klik Authorize masukkan Bearer token lalu Try it out
+- Base URL dev default PORT 3000 (lihat src/main.ts:30 `process.env.PORT ?? 3000`)
