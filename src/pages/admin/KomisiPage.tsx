@@ -159,120 +159,254 @@ export default function KomisiPage() {
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 mb-4 ambient-shadow-sm">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
-            <div className="relative flex-1 max-w-[420px]"><span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">search</span><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari model, IMEI..." className="input-focus w-full pl-9 pr-3 py-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" /></div>
-            <div className="flex flex-wrap gap-2">
-              <select value={filterAktivitas} onChange={(e) => setFilterAktivitas(e.target.value)} className="h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm">
+            <div className="relative flex-1 max-w-[420px]">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">search</span>
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari model, IMEI..." className="input-focus w-full pl-9 pr-3 py-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30"><span className="w-1.5 h-1.5 rounded-full bg-primary" /> {filtered.length} hasil</span>
+              <button onClick={fetchAll} className="px-3 py-2 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-sm font-medium flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">refresh</span></button>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 items-start sm:items-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5 shrink-0">
+              <span className="material-symbols-outlined text-[16px]">filter_alt</span> Filter:
+            </span>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
+              <select value={filterAktivitas} onChange={(e) => setFilterAktivitas(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm w-full sm:w-auto">
                 <option value="">Semua aktivitas</option>
                 {[...new Set(aktivitas.map((a) => a.namaAktivitas))].map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
-              <select value={filterPegawai} onChange={(e) => setFilterPegawai(e.target.value ? Number(e.target.value) : "")} className="h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm">
+              <select value={filterPegawai} onChange={(e) => setFilterPegawai(e.target.value ? Number(e.target.value) : "")} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm w-full sm:w-auto">
                 <option value="">Semua pegawai</option>
                 {pegawai.map((p) => <option key={p.idPegawai} value={p.idPegawai}>{p.namaPegawai}</option>)}
               </select>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 items-center p-3 rounded-lg bg-surface-container border border-outline-variant/30">
-            <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode:</span>
-            <select value={periodeMode} onChange={(e) => setPeriodeMode(e.target.value as never)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm">
-              <option value="all">Semua</option>
-              <option value="periode">Per Bulan</option>
-              <option value="tanggal">Per Tanggal</option>
-              <option value="range">Rentang</option>
-              <option value="bulanTahun">Bulan & Tahun</option>
-            </select>
-            {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />}
-            {periodeMode === "tanggal" && <input type="date" value={tanggalVal} onChange={(e) => setTanggalVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />}
-            {periodeMode === "range" && <><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /><span className="text-on-surface-variant text-sm">—</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /></>}
-            {periodeMode === "bulanTahun" && <><input type="number" min={1} max={12} placeholder="Bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="h-9 w-24 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /><input type="number" min={2000} max={2100} placeholder="Tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="h-9 w-28 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /></>}
-            {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(""); setTanggalVal(""); setStartDate(""); setEndDate(""); setBulanVal(""); setTahunVal(""); setPeriodeMode("all"); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium">Reset</button>}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 items-start sm:items-center p-3 rounded-lg bg-surface-container border border-outline-variant/30">
+            <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5 shrink-0">
+              <span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode:
+            </span>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
+              <select value={periodeMode} onChange={(e) => setPeriodeMode(e.target.value as never)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto">
+                <option value="all">Semua</option>
+                <option value="periode">Per Bulan</option>
+                <option value="tanggal">Per Tanggal</option>
+                <option value="range">Rentang</option>
+                <option value="bulanTahun">Bulan & Tahun</option>
+              </select>
+              {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />}
+              {periodeMode === "tanggal" && <input type="date" value={tanggalVal} onChange={(e) => setTanggalVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />}
+              {periodeMode === "range" && (
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />
+                  <span className="text-on-surface-variant text-sm">—</span>
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />
+                </div>
+              )}
+              {periodeMode === "bulanTahun" && (
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                  <input type="number" min={1} max={12} placeholder="Bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="h-9 w-full sm:w-24 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />
+                  <input type="number" min={2000} max={2100} placeholder="Tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="h-9 w-full sm:w-28 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />
+                </div>
+              )}
+              {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(""); setTanggalVal(""); setStartDate(""); setEndDate(""); setBulanVal(""); setTahunVal(""); setPeriodeMode("all"); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium w-full sm:w-auto">Reset</button>}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg overflow-hidden ambient-shadow-sm">
-        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+        {/* Mobile View: Cards */}
+        <div className="block lg:hidden divide-y divide-outline-variant/20 max-h-[60vh] overflow-y-auto">
+          {loading ? (
+            <div className="py-10 text-center">
+              <span className="inline-flex items-center gap-2 text-on-surface-variant">
+                <span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />
+                Memuat...
+              </span>
+            </div>
+          ) : err ? (
+            <div className="py-10 text-center">
+              <div className="text-error text-sm font-medium">{err}</div>
+              <button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-10 text-center text-on-surface-variant text-sm">Belum ada data.</div>
+          ) : viewMode === "grouped" ? (
+            groups.map((group) => {
+              const collapsed = collapsedKeys.has(group.key);
+              return (
+                <div key={group.key}>
+                  {/* Group header card */}
+                  <div 
+                    className="p-4 bg-surface-container hover:bg-surface-container-high transition cursor-pointer space-y-2"
+                    onClick={() => toggleGroup(group.key)}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">{collapsed ? "chevron_right" : "expand_more"}</span>
+                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/15 grid place-items-center text-primary shrink-0">
+                          <span className="material-symbols-outlined text-[16px]">smartphone</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-on-surface truncate">{group.model}</div>
+                          <div className="font-mono text-xs text-primary truncate">{group.imei}</div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs text-on-surface-variant">{group.items.length} komisi</div>
+                        <div className="font-bold text-primary text-sm">{fmtIDR(group.totalKomisi.toFixed(2))}</div>
+                      </div>
+                    </div>
+                    <div className="pl-[46px] space-y-0.5">
+                      {group.sources.map((s, si) => (
+                        <div key={si} className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                          <span className="material-symbols-outlined text-[12px]">{s.label.startsWith("Penj") ? "point_of_sale" : "shopping_bag"}</span>
+                          {s.label} <span className="text-on-surface-variant/70">• {s.tgl}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Group items */}
+                  {!collapsed && group.items.map((r, i) => (
+                    <div 
+                      key={r.idKomisi} 
+                      className="px-4 py-3 hover:bg-surface-container-low transition cursor-pointer border-l-2 border-primary/20 ml-4"
+                      onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">{getAktivitasName(r)}</span>
+                        <span className="font-mono font-semibold text-primary text-sm">{fmtIDR(r.nominalKomisi)}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 text-xs text-on-surface-variant">
+                        <span className="font-medium">{r.pegawai?.namaPegawai ?? `#${r.idPegawai}`}</span>
+                        <span className="font-mono">{parseFloat(r.persentaseBerlaku).toFixed(2)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })
+          ) : (
+            filtered.map((r, i) => (
+              <div 
+                key={r.idKomisi} 
+                className="p-4 hover:bg-surface-container-low transition cursor-pointer space-y-2"
+                onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">{getAktivitasName(r)}</span>
+                  <span className="font-mono font-semibold text-primary text-sm">{fmtIDR(r.nominalKomisi)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <div className="min-w-0">
+                    <div className="font-medium text-on-surface truncate">
+                      {r.penjualan?.unitHp?.model?.namaModel ?? r.pembelian?.unitHp?.model?.namaModel ?? "—"}
+                    </div>
+                    <div className="font-mono text-primary">
+                      {r.penjualan?.unitHp?.imei5 ?? r.pembelian?.unitHp?.imei5 ?? "—"}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-on-surface-variant">{r.idPenjualan ? `Jual #${r.idPenjualan}` : r.idPembelian ? `Beli #${r.idPembelian}` : "—"}</div>
+                    <div className="text-on-surface-variant">{r.pegawai?.namaPegawai ?? `#${r.idPegawai}`}</div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
-            <thead><tr className="bg-surface-bright border-b border-outline-variant/50 sticky top-0 z-10">
-              <th className="py-3 px-4 text-xs font-semibold uppercase w-[50px] text-center">#</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase w-[80px]">ID</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase">Model / IMEI</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase">Transaksi</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase">Aktivitas</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase">Pegawai</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase w-[70px] text-right">%</th>
-              <th className="py-3 px-4 text-xs font-semibold uppercase w-[130px] text-right">Nominal</th>
-            </tr></thead>
+            <thead>
+              <tr className="bg-surface-bright border-b border-outline-variant/50 sticky top-0 z-10">
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[50px] text-center">#</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[80px]">ID</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Model / IMEI</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Transaksi</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Aktivitas</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Pegawai</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[70px] text-right">%</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[130px] text-right">Nominal</th>
+              </tr>
+            </thead>
             <tbody className="text-sm">
-              {loading ? <tr><td colSpan={8} className="py-10 text-center"><span className="inline-flex items-center gap-2 text-on-surface-variant"><span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />Memuat...</span></td></tr>
-                : err ? <tr><td colSpan={8} className="py-10 text-center"><div className="text-error text-sm font-medium">{err}</div><button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button></td></tr>
-                  : filtered.length === 0 ? <tr><td colSpan={8} className="py-10 text-center text-on-surface-variant text-sm">Belum ada data.</td></tr>
-                    : viewMode === "grouped" ? (
-                      groups.map((group) => {
-                        const collapsed = collapsedKeys.has(group.key);
-                        return (
-                          <Fragment key={group.key}>
-                            <tr className="bg-surface-container border-b border-outline-variant/40 cursor-pointer hover:bg-surface-container-high transition" onClick={() => toggleGroup(group.key)}>
-                              <td className="py-2.5 px-4 text-center">
-                                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{collapsed ? "chevron_right" : "expand_more"}</span>
-                              </td>
-                              <td colSpan={2} className="py-2.5 px-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 grid place-items-center text-primary shrink-0"><span className="material-symbols-outlined text-[16px]">smartphone</span></div>
-                                  <div>
-                                    <div className="font-semibold text-on-surface">{group.model}</div>
-                                    <div className="font-mono text-xs text-primary">{group.imei}</div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td colSpan={1} className="py-2.5 px-4">
-                                <div className="space-y-0.5">
-                                  {group.sources.map((s, si) => (
-                                    <div key={si} className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                                      <span className="material-symbols-outlined text-[12px]">{s.label.startsWith("Penj") ? "point_of_sale" : "shopping_bag"}</span>
-                                      {s.label} <span className="text-on-surface-variant/70">• {s.tgl}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </td>
-                              <td colSpan={3} className="py-2.5 px-4 text-right">
-                                <div className="text-xs text-on-surface-variant">{group.items.length} komisi</div>
-                                <div className="font-bold text-primary">{fmtIDR(group.totalKomisi.toFixed(2))}</div>
-                              </td>
-                            </tr>
-                            {!collapsed && group.items.map((r, i) => (
-                              <tr key={r.idKomisi} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition cursor-pointer" onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}>
-                                <td className="py-2.5 px-4 text-center text-on-surface-variant">{i + 1}</td>
-                                <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant">#{r.idKomisi}</td>
-                                <td className="py-2.5 px-4 text-on-surface-variant">—</td>
-                                <td className="py-2.5 px-4 text-on-surface-variant">—</td>
-                                <td className="py-2.5 px-4"><span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">{getAktivitasName(r)}</span></td>
-                                <td className="py-2.5 px-4 font-medium">{r.pegawai?.namaPegawai ?? `#${r.idPegawai}`}</td>
-                                <td className="py-2.5 px-4 text-right font-mono">{parseFloat(r.persentaseBerlaku).toFixed(2)}%</td>
-                                <td className="py-2.5 px-4 text-right font-mono font-semibold text-primary">{fmtIDR(r.nominalKomisi)}</td>
-                              </tr>
+              {loading ? (
+                <tr><td colSpan={8} className="py-10 text-center"><span className="inline-flex items-center gap-2 text-on-surface-variant"><span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />Memuat...</span></td></tr>
+              ) : err ? (
+                <tr><td colSpan={8} className="py-10 text-center"><div className="text-error text-sm font-medium">{err}</div><button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button></td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={8} className="py-10 text-center text-on-surface-variant text-sm">Belum ada data.</td></tr>
+              ) : viewMode === "grouped" ? (
+                groups.map((group) => {
+                  const collapsed = collapsedKeys.has(group.key);
+                  return (
+                    <Fragment key={group.key}>
+                      <tr className="bg-surface-container border-b border-outline-variant/40 cursor-pointer hover:bg-surface-container-high transition" onClick={() => toggleGroup(group.key)}>
+                        <td className="py-2.5 px-4 text-center">
+                          <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{collapsed ? "chevron_right" : "expand_more"}</span>
+                        </td>
+                        <td colSpan={2} className="py-2.5 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/15 grid place-items-center text-primary shrink-0"><span className="material-symbols-outlined text-[16px]">smartphone</span></div>
+                            <div>
+                              <div className="font-semibold text-on-surface">{group.model}</div>
+                              <div className="font-mono text-xs text-primary">{group.imei}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td colSpan={1} className="py-2.5 px-4">
+                          <div className="space-y-0.5">
+                            {group.sources.map((s, si) => (
+                              <div key={si} className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                                <span className="material-symbols-outlined text-[12px]">{s.label.startsWith("Penj") ? "point_of_sale" : "shopping_bag"}</span>
+                                {s.label} <span className="text-on-surface-variant/70">• {s.tgl}</span>
+                              </div>
                             ))}
-                          </Fragment>
-                        );
-                      })
-                    ) : (
-                      filtered.map((r, i) => (
+                          </div>
+                        </td>
+                        <td colSpan={3} className="py-2.5 px-4 text-right">
+                          <div className="text-xs text-on-surface-variant">{group.items.length} komisi</div>
+                          <div className="font-bold text-primary">{fmtIDR(group.totalKomisi.toFixed(2))}</div>
+                        </td>
+                      </tr>
+                      {!collapsed && group.items.map((r, i) => (
                         <tr key={r.idKomisi} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition cursor-pointer" onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}>
                           <td className="py-2.5 px-4 text-center text-on-surface-variant">{i + 1}</td>
                           <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant">#{r.idKomisi}</td>
-                          <td className="py-2.5 px-4">
-                            <div className="font-medium text-on-surface">{r.penjualan?.unitHp?.model?.namaModel ?? r.pembelian?.unitHp?.model?.namaModel ?? "—"}</div>
-                            <div className="font-mono text-xs text-primary">{r.penjualan?.unitHp?.imei5 ?? r.pembelian?.unitHp?.imei5 ?? "—"}</div>
-                          </td>
-                          <td className="py-2.5 px-4 text-on-surface-variant text-xs">{r.idPenjualan ? `Jual #${r.idPenjualan}` : r.idPembelian ? `Beli #${r.idPembelian}` : "—"}</td>
+                          <td className="py-2.5 px-4 text-on-surface-variant">—</td>
+                          <td className="py-2.5 px-4 text-on-surface-variant">—</td>
                           <td className="py-2.5 px-4"><span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">{getAktivitasName(r)}</span></td>
                           <td className="py-2.5 px-4 font-medium">{r.pegawai?.namaPegawai ?? `#${r.idPegawai}`}</td>
                           <td className="py-2.5 px-4 text-right font-mono">{parseFloat(r.persentaseBerlaku).toFixed(2)}%</td>
                           <td className="py-2.5 px-4 text-right font-mono font-semibold text-primary">{fmtIDR(r.nominalKomisi)}</td>
                         </tr>
-                      ))
-                    )}
+                      ))}
+                    </Fragment>
+                  );
+                })
+              ) : (
+                filtered.map((r, i) => (
+                  <tr key={r.idKomisi} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition cursor-pointer" onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}>
+                    <td className="py-2.5 px-4 text-center text-on-surface-variant">{i + 1}</td>
+                    <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant">#{r.idKomisi}</td>
+                    <td className="py-2.5 px-4">
+                      <div className="font-medium text-on-surface">{r.penjualan?.unitHp?.model?.namaModel ?? r.pembelian?.unitHp?.model?.namaModel ?? "—"}</div>
+                      <div className="font-mono text-xs text-primary">{r.penjualan?.unitHp?.imei5 ?? r.pembelian?.unitHp?.imei5 ?? "—"}</div>
+                    </td>
+                    <td className="py-2.5 px-4 text-on-surface-variant text-xs">{r.idPenjualan ? `Jual #${r.idPenjualan}` : r.idPembelian ? `Beli #${r.idPembelian}` : "—"}</td>
+                    <td className="py-2.5 px-4"><span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">{getAktivitasName(r)}</span></td>
+                    <td className="py-2.5 px-4 font-medium">{r.pegawai?.namaPegawai ?? `#${r.idPegawai}`}</td>
+                    <td className="py-2.5 px-4 text-right font-mono">{parseFloat(r.persentaseBerlaku).toFixed(2)}%</td>
+                    <td className="py-2.5 px-4 text-right font-mono font-semibold text-primary">{fmtIDR(r.nominalKomisi)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

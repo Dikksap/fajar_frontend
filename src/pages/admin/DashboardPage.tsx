@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../auth/useAuth";
 import {
   getDashboard,
@@ -11,6 +11,25 @@ import {
   type DashboardProfitBulanan,
   type DashboardBulananQuery,
 } from "../../lib/dashboard";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function fmtIDR(v: string | number | null | undefined) {
   if (v === null || v === undefined || v === "") return "Rp 0";
@@ -25,93 +44,102 @@ function fmtNum(n: number | string | null | undefined) {
 
 // Chart: profit-bulanan → grouped bars (totalHargaJual, totalProfitKotor, profitBersih)
 function ProfitChart({ data }: { data: DashboardProfitBulanan[] }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  if (data.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-sm font-medium">
+        Belum ada data.
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const labels = data.map((d) => d.periodeLabel);
+  const hargaJual = data.map((d) => Number(d.totalHargaJual) || 0);
+  const profitKotor = data.map((d) => Number(d.totalProfitKotor) || 0);
+  const profitBersih = data.map((d) => Number(d.profitBersih) || 0);
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, rect.width, rect.height);
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: "Harga Jual",
+        data: hargaJual,
+        backgroundColor: "#065f46",
+        borderRadius: 4,
+      },
+      {
+        label: "Laba Kotor",
+        data: profitKotor,
+        backgroundColor: "#94a3b8",
+        borderRadius: 4,
+      },
+      {
+        label: "Laba Bersih",
+        data: profitBersih,
+        backgroundColor: "#fbbf24",
+        borderRadius: 4,
+      },
+    ],
+  };
 
-    if (data.length === 0) {
-      ctx.fillStyle = "#6f7973";
-      ctx.font = "14px Inter, sans-serif";
-      ctx.textAlign = "center";
-        ctx.fillText("Belum ada data.", rect.width / 2, rect.height / 2);
-      return;
-    }
-
-    const labels = data.map((d) => d.periodeLabel);
-    const hargaJual = data.map((d) => Number(d.totalHargaJual) || 0);
-    const profitKotor = data.map((d) => Number(d.totalProfitKotor) || 0);
-    const profitBersih = data.map((d) => Number(d.profitBersih) || 0);
-
-    const colors = ["#065f46", "#94a3b8", "#fbbf24"]; // pendapatan, pengeluaran analogy → hargaJual, profitKotor, profitBersih
-    const W = rect.width;
-    const H = rect.height;
-    const pad = { top: 24, right: 16, bottom: 32, left: 56 };
-    const chartW = W - pad.left - pad.right;
-    const chartH = H - pad.top - pad.bottom;
-    const maxVal = Math.max(1, ...hargaJual, ...profitKotor, ...profitBersih) * 1.15;
-
-    // grid
-    ctx.strokeStyle = "#e1e3e4";
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + (chartH / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(W - pad.right, y);
-      ctx.stroke();
-      const val = maxVal - (maxVal / 4) * i;
-      ctx.fillStyle = "#6f7973";
-      ctx.font = "11px Inter, sans-serif";
-      ctx.textAlign = "right";
-      const label = val >= 1_000_000 ? `${(val / 1_000_000).toFixed(1)}jt` : val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(Math.round(val));
-      ctx.fillText(label, pad.left - 8, y + 3);
-    }
-
-    const groupW = chartW / labels.length;
-    const barW = Math.min(22, groupW * 0.2);
-    const gap = 4;
-
-    labels.forEach((label, i) => {
-      const gx = pad.left + groupW * i + (groupW - (barW * 3 + gap * 2)) / 2;
-      const datasets = [hargaJual[i], profitKotor[i], profitBersih[i]];
-      datasets.forEach((val, j) => {
-        const h = (val / maxVal) * chartH;
-        const x = gx + j * (barW + gap);
-        const y = pad.top + chartH - h;
-        ctx.fillStyle = colors[j];
-        const r = 4;
-        ctx.beginPath();
-        ctx.moveTo(x, y + r);
-        ctx.arcTo(x, y, x + barW, y, r);
-        ctx.arcTo(x + barW, y, x + barW, y + h, r);
-        ctx.lineTo(x + barW, y + h);
-        ctx.lineTo(x, y + h);
-        ctx.closePath();
-        ctx.fill();
-      });
-      ctx.fillStyle = "#3f4944";
-      ctx.font = "11px Inter, sans-serif";
-      ctx.textAlign = "center";
-      // trim label to short month if dense
-      const short = label.length > 7 ? label.slice(5) : label;
-      ctx.fillText(short, pad.left + groupW * i + groupW / 2, H - 8);
-    });
-  }, [data]);
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false, // We already show custom indicators in the parent UI
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += fmtIDR(context.parsed.y);
+            }
+            return label;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          color: "#3f4944",
+          font: {
+            family: "Inter, sans-serif",
+            size: 11,
+          },
+        },
+      },
+      y: {
+        grid: {
+          color: "rgba(225, 227, 228, 0.5)",
+        },
+        ticks: {
+          color: "#6f7973",
+          font: {
+            family: "Inter, sans-serif",
+            size: 11,
+          },
+          callback: function (value: any) {
+            const val = Number(value);
+            if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}jt`;
+            if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
+            return String(val);
+          },
+        },
+      },
+    },
+  };
 
   return (
-    <div className="w-full h-80 relative">
-      <canvas ref={canvasRef} className="w-full h-full" style={{ width: "100%", height: "100%" }} />
+    <div className="w-full h-full relative">
+      <Bar data={chartData} options={options} />
     </div>
   );
 }

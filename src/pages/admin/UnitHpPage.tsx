@@ -172,35 +172,106 @@ export default function UnitHpPage() {
             <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">search</span>
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari IMEI, model, warna..." className="input-focus w-full pl-9 pr-3 py-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as never)} className="h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" aria-label="Filter status">
-              <option value="">Semua status</option>
-              {STATUS_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <select value={filterModel} onChange={(e) => setFilterModel(e.target.value === "" ? "" : Number(e.target.value))} className="h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" disabled={modelsLoading} aria-label="Filter model">
-              <option value="">Semua model</option>
-              {models.map((m) => <option key={m.idModel} value={m.idModel}>{m.namaModel}</option>)}
-            </select>
-            <select value={filterKapasitas} onChange={(e) => setFilterKapasitas(e.target.value)} className="h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" aria-label="Filter kapasitas">
-              <option value="">Semua kapasitas</option>
-              {KAPASITAS_OPTS.map((k) => <option key={k} value={k}>{k} GB</option>)}
-            </select>
-            <input value={filterWarna} onChange={(e) => setFilterWarna(e.target.value)} placeholder="Warna..." className="input-focus h-10 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm w-28" aria-label="Filter warna" />
+          <div className="flex items-center gap-2 text-xs">
             {hasActiveFilter && (
               <button onClick={() => { setFilterStatus(""); setFilterModel(""); setFilterKapasitas(""); setFilterWarna(""); setQ(""); }} className="px-3 py-2 rounded-sm border border-error/30 text-error hover:bg-error-container text-sm font-medium flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">filter_alt_off</span> Reset</button>
             )}
             <button onClick={fetchAll} className="px-3 py-2 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-sm font-medium flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">refresh</span> Refresh</button>
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-xs"><span className="w-1.5 h-1.5 rounded-full bg-primary" /> {filtered.length} hasil</span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30"><span className="w-1.5 h-1.5 rounded-full bg-primary" /> {filtered.length} hasil</span>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 items-start sm:items-center p-3 rounded-b-lg bg-surface-container border border-outline-variant/30 border-t-0 lg:border-t">
+          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5 shrink-0">
+            <span className="material-symbols-outlined text-[16px]">filter_alt</span> Filter:
+          </span>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as never)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" aria-label="Filter status">
+              <option value="">Semua status</option>
+              {STATUS_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select value={filterModel} onChange={(e) => setFilterModel(e.target.value === "" ? "" : Number(e.target.value))} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" disabled={modelsLoading} aria-label="Filter model">
+              <option value="">Semua model</option>
+              {models.map((m) => <option key={m.idModel} value={m.idModel}>{m.namaModel}</option>)}
+            </select>
+            <select value={filterKapasitas} onChange={(e) => setFilterKapasitas(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" aria-label="Filter kapasitas">
+              <option value="">Semua kapasitas</option>
+              {KAPASITAS_OPTS.map((k) => <option key={k} value={k}>{k} GB</option>)}
+            </select>
+            <input value={filterWarna} onChange={(e) => setFilterWarna(e.target.value)} placeholder="Warna..." className="input-focus h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-28" aria-label="Filter warna" />
           </div>
         </div>
       </div>
 
       {/* Table Card */}
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden ambient-shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block lg:hidden divide-y divide-outline-variant/20 max-h-[60vh] overflow-y-auto">
+          {loading ? (
+            <div className="py-10 text-center">
+              <span className="inline-flex items-center gap-2 text-on-surface-variant">
+                <span className="w-5 h-5 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />
+                Memuat data unit...
+              </span>
+            </div>
+          ) : err ? (
+            <div className="py-10 text-center">
+              <div className="text-error text-sm font-medium">{err}</div>
+              <button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-10 text-center flex flex-col items-center gap-2 text-on-surface-variant">
+              <span className="material-symbols-outlined text-[48px] opacity-30">inventory_2</span>
+              <span className="text-base font-medium">{hasActiveFilter ? "Tidak ada hasil filter" : "Belum ada unit"}</span>
+              <span className="text-sm">{hasActiveFilter ? "Coba ubah filter pencarian" : "Tambah unit baru via Pembelian"}</span>
+            </div>
+          ) : (
+            filtered.map((u) => (
+              <div 
+                key={u.imei5} 
+                className="p-4 hover:bg-surface-container-low transition cursor-pointer space-y-3"
+                onClick={() => getUnitHpById(u.imei5).then(setDetail).catch(() => {})}
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/15 grid place-items-center text-primary shrink-0">
+                      <span className="material-symbols-outlined text-[20px]">smartphone</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-on-surface text-base leading-snug truncate">{u.model?.namaModel ?? `#${u.idModel}`}</h4>
+                      <span className="font-mono text-xs font-bold text-primary">{u.imei5}</span>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border shrink-0 ${statusColor(u.statusStok)}`}>
+                    <span className="material-symbols-outlined text-[14px]">{statusIcon(u.statusStok)}</span>
+                    {statusLabel(u.statusStok)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant pl-[52px]">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">sd_card</span>
+                    {u.kapasitasGb ? `${u.kapasitasGb} GB` : "—"}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">palette</span>
+                    {u.warna ?? "—"}
+                  </span>
+                  {u.batteryHealth != null && (
+                    <span className={`flex items-center gap-1 font-medium ${u.batteryHealth >= 80 ? "text-primary" : u.batteryHealth >= 60 ? "text-secondary" : "text-error"}`}>
+                      <span className="material-symbols-outlined text-[14px]">battery_{u.batteryHealth >= 80 ? "full" : u.batteryHealth >= 60 ? "6_bar" : "2_bar"}</span>
+                      {u.batteryHealth}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
-              <tr className="bg-surface-bright border-b border-outline-variant/50">
+              <tr className="bg-surface-bright border-b border-outline-variant/50 sticky top-0 z-10">
                 <th className="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase w-[130px]">IMEI5</th>
                 <th className="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase">Model</th>
                 <th className="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase w-[100px]">Kapasitas</th>
@@ -263,9 +334,8 @@ export default function UnitHpPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between text-xs text-on-surface-variant">
-          <span>Total {data.length} unit • {filtered.length} ditampilkan</span>
-          <span className="hidden sm:inline">read-only</span>
+        <div className="px-4 py-3 bg-surface-container-low border-t border-outline-variant/30 text-xs text-on-surface-variant">
+          Total {data.length} unit • {filtered.length} ditampilkan
         </div>
       </div>
 

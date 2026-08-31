@@ -164,36 +164,153 @@ export default function PembelianPage() {
           <div className="relative flex-1 max-w-[420px]"><span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">search</span><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari IMEI, model, aktivitas..." className="input-focus w-full pl-9 pr-3 py-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" /></div>
           <div className="flex items-center gap-2 text-xs"><span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30"><span className="w-1.5 h-1.5 rounded-full bg-primary" />{filtered.length} hasil</span><button onClick={fetchAll} className="px-3 py-2 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-sm font-medium flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">refresh</span> Refresh</button></div>
         </div>
-        <div className="flex flex-wrap gap-2 items-center p-3 rounded-lg bg-surface-container border border-outline-variant/30 mt-3">
-          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode:</span>
-          <select value={periodeMode} onChange={(e) => setPeriodeMode(e.target.value as never)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm"><option value="all">Semua waktu</option><option value="periode">per-bulan</option><option value="tanggal">per-tanggal</option><option value="range">awal & akhir tgl</option><option value="bulanTahun">bulan & tahun</option></select>
-          {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />}
-          {periodeMode === "tanggal" && <input type="date" value={tanggalVal} onChange={(e) => setTanggalVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />}
-          {periodeMode === "range" && <><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /><span className="text-on-surface-variant text-sm">—</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /></>}
-          {periodeMode === "bulanTahun" && <><input type="number" min={1} max={12} placeholder="bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="h-9 w-24 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /><input type="number" min={2000} max={2100} placeholder="tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="h-9 w-28 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" /></>}
-          {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(""); setTanggalVal(""); setStartDate(""); setEndDate(""); setBulanVal(""); setTahunVal(""); setPeriodeMode("all"); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium">Reset</button>}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 items-start sm:items-center p-3 rounded-lg bg-surface-container border border-outline-variant/30 mt-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5 shrink-0">
+            <span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode:
+          </span>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
+            <select 
+              value={periodeMode} 
+              onChange={(e) => setPeriodeMode(e.target.value as never)} 
+              className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto"
+            >
+              <option value="all">Semua waktu</option>
+              <option value="periode">per-bulan</option>
+              <option value="tanggal">per-tanggal</option>
+              <option value="range">awal & akhir tgl</option>
+              <option value="bulanTahun">bulan & tahun</option>
+            </select>
+            {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />}
+            {periodeMode === "tanggal" && <input type="date" value={tanggalVal} onChange={(e) => setTanggalVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />}
+            {periodeMode === "range" && (
+              <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />
+                <span className="text-on-surface-variant text-sm">—</span>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />
+              </div>
+            )}
+            {periodeMode === "bulanTahun" && (
+              <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                <input type="number" min={1} max={12} placeholder="bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="h-9 w-full sm:w-24 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />
+                <input type="number" min={2000} max={2100} placeholder="tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="h-9 w-full sm:w-28 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm" />
+              </div>
+            )}
+            {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(""); setTanggalVal(""); setStartDate(""); setEndDate(""); setBulanVal(""); setTahunVal(""); setPeriodeMode("all"); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium w-full sm:w-auto">Reset</button>}
+          </div>
         </div>
       </div>
 
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg overflow-hidden ambient-shadow-sm">
-        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+        {/* Mobile View: Cards */}
+        <div className="block lg:hidden divide-y divide-outline-variant/20 max-h-[60vh] overflow-y-auto">
+          {loading ? (
+            <div className="py-10 text-center">
+              <span className="inline-flex items-center gap-2 text-on-surface-variant">
+                <span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />
+                Memuat...
+              </span>
+            </div>
+          ) : err ? (
+            <div className="py-10 text-center">
+              <div className="text-error text-sm font-medium">{err}</div>
+              <button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-10 text-center text-on-surface-variant text-sm">
+              {q ? `Tidak ada hasil "${q}"` : "Belum ada pembelian."}
+            </div>
+          ) : (
+            filtered.map((r) => (
+              <div 
+                key={r.idPembelian} 
+                className="p-4 hover:bg-surface-container-low transition cursor-pointer space-y-3"
+                onClick={() => getPembelianById(r.idPembelian).then(setDetail).catch(() => setDetail(r))}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-xs text-on-surface-variant font-medium">#{r.idPembelian}</span>
+                  <span className="text-xs text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-sm border border-outline-variant/30">{fmtTgl(r.tanggalMasuk)}</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-on-surface text-base leading-snug">
+                    {r.unitHp?.model?.namaModel ?? "—"}
+                    {r.unitHp?.kapasitasGb && <span className="text-on-surface-variant font-normal"> • {r.unitHp.kapasitasGb}GB</span>}
+                  </h4>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/15">{r.imei5}</span>
+                    <span className="font-mono text-sm font-bold text-primary">{fmtHarga(r.hargaBeli)}</span>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-outline-variant/10">
+                  {renderAktivitasCell(r)}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden lg:block overflow-x-auto max-h-[60vh] overflow-y-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
-            <thead><tr className="bg-surface-bright border-b border-outline-variant/50 sticky top-0 z-10"><th className="py-3 px-4 text-xs font-semibold uppercase w-[90px]">ID</th><th className="py-3 px-4 text-xs font-semibold uppercase w-[120px]">IMEI5</th><th className="py-3 px-4 text-xs font-semibold uppercase">Model</th><th className="py-3 px-4 text-xs font-semibold uppercase w-[110px]">Tanggal</th><th className="py-3 px-4 text-xs font-semibold uppercase w-[140px] text-right">Harga Beli</th><th className="py-3 px-4 text-xs font-semibold uppercase">Aktivitas</th><th className="py-3 px-4 text-xs font-semibold uppercase w-[80px] text-right">Aksi</th></tr></thead>
+            <thead>
+              <tr className="bg-surface-bright border-b border-outline-variant/50 sticky top-0 z-10">
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[90px]">ID</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[120px]">IMEI5</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Model</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[110px]">Tanggal</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[140px] text-right">Harga Beli</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase">Aktivitas</th>
+                <th className="py-3 px-4 text-xs font-semibold uppercase w-[80px] text-right">Aksi</th>
+              </tr>
+            </thead>
             <tbody className="text-sm">
-              {loading ? <tr><td colSpan={7} className="py-10 text-center"><span className="inline-flex items-center gap-2 text-on-surface-variant"><span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />Memuat...</span></td></tr>
-                : err ? <tr><td colSpan={7} className="py-10 text-center"><div className="text-error text-sm font-medium">{err}</div><button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button></td></tr>
-                  : filtered.length === 0 ? <tr><td colSpan={7} className="py-10 text-center text-on-surface-variant text-sm">{q ? `Tidak ada hasil "${q}"` : "Belum ada pembelian."}</td></tr>
-                    : filtered.map((r) => (
-                      <tr key={r.idPembelian} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition last:border-0 cursor-pointer" onClick={() => getPembelianById(r.idPembelian).then(setDetail).catch(() => setDetail(r))}>
-                        <td className="py-3 px-4 font-mono text-xs text-on-surface-variant">#{r.idPembelian}</td>
-                        <td className="py-3 px-4 font-mono text-xs font-semibold text-primary">{r.imei5}</td>
-                        <td className="py-3 px-4"><span className="font-medium">{r.unitHp?.model?.namaModel ?? "—"}</span>{r.unitHp?.kapasitasGb && <span className="text-on-surface-variant"> • {r.unitHp.kapasitasGb}GB</span>}</td>
-                        <td className="py-3 px-4 text-on-surface-variant">{fmtTgl(r.tanggalMasuk)}</td>
-                        <td className="py-3 px-4 text-right font-mono font-semibold text-primary">{fmtHarga(r.hargaBeli)}</td>
-                        <td className="py-3 px-4">{renderAktivitasCell(r)}</td>
-                        <td className="py-3 px-4"><div className="flex justify-end" onClick={(e) => e.stopPropagation()}><button onClick={() => getPembelianById(r.idPembelian).then(setDetail)} className="w-8 h-8 grid place-items-center rounded-sm border border-outline-variant hover:bg-surface-container"><span className="material-symbols-outlined text-[18px]">visibility</span></button></div></td>
-                      </tr>
-                    ))}
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center">
+                    <span className="inline-flex items-center gap-2 text-on-surface-variant">
+                      <span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" />
+                      Memuat...
+                    </span>
+                  </td>
+                </tr>
+              ) : err ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center">
+                    <div className="text-error text-sm font-medium">{err}</div>
+                    <button onClick={fetchAll} className="mt-2 text-primary text-sm hover:underline">Coba lagi</button>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-on-surface-variant text-sm">
+                    {q ? `Tidak ada hasil "${q}"` : "Belum ada pembelian."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((r) => (
+                  <tr 
+                    key={r.idPembelian} 
+                    className="border-b border-outline-variant/20 hover:bg-surface-container-low transition last:border-0 cursor-pointer" 
+                    onClick={() => getPembelianById(r.idPembelian).then(setDetail).catch(() => setDetail(r))}
+                  >
+                    <td className="py-3 px-4 font-mono text-xs text-on-surface-variant">#{r.idPembelian}</td>
+                    <td className="py-3 px-4 font-mono text-xs font-semibold text-primary">{r.imei5}</td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium">{r.unitHp?.model?.namaModel ?? "—"}</span>
+                      {r.unitHp?.kapasitasGb && <span className="text-on-surface-variant"> • {r.unitHp.kapasitasGb}GB</span>}
+                    </td>
+                    <td className="py-3 px-4 text-on-surface-variant">{fmtTgl(r.tanggalMasuk)}</td>
+                    <td className="py-3 px-4 text-right font-mono font-semibold text-primary">{fmtHarga(r.hargaBeli)}</td>
+                    <td className="py-3 px-4">{renderAktivitasCell(r)}</td>
+                    <td className="py-3 px-4">
+                      <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => getPembelianById(r.idPembelian).then(setDetail)} className="w-8 h-8 grid place-items-center rounded-sm border border-outline-variant hover:bg-surface-container">
+                          <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -243,12 +360,34 @@ export default function PembelianPage() {
               </div>
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-2"><span className="text-sm font-medium">Aktivitas + Pegawai</span><button type="button" onClick={addRow} className="text-xs px-2.5 py-1 rounded-full border border-primary text-primary hover:bg-primary/10 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">add</span> Baris</button></div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {aktivitasRows.map((row, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <select value={row.idAktivitas} onChange={(e) => updateRow(idx, { idAktivitas: Number(e.target.value) })} className="flex-1 h-10 px-2 rounded-sm border border-outline-variant bg-surface-bright text-sm"><option value={0}>— aktivitas —</option>{aktivitasMaster.map((a) => <option key={a.idAktivitas} value={a.idAktivitas}>{a.namaAktivitas} — {parseFloat(a.persentase).toFixed(2)}%</option>)}</select>
-                      <select value={row.idPegawai} onChange={(e) => updateRow(idx, { idPegawai: Number(e.target.value) })} className="flex-1 h-10 px-2 rounded-sm border border-outline-variant bg-surface-bright text-sm"><option value={0}>— pegawai —</option>{pegawai.map((p) => <option key={p.idPegawai} value={p.idPegawai}>{p.namaPegawai}</option>)}</select>
-                      <button type="button" onClick={() => removeRow(idx)} className="w-8 h-8 grid place-items-center rounded-sm border border-outline-variant text-error hover:bg-error-container"><span className="material-symbols-outlined text-[16px]">close</span></button>
+                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_40px] gap-2 p-3 sm:p-0 rounded-lg sm:rounded-none bg-surface-container-low sm:bg-transparent border border-outline-variant/30 sm:border-0 relative">
+                      <select 
+                        value={row.idAktivitas} 
+                        onChange={(e) => updateRow(idx, { idAktivitas: Number(e.target.value) })} 
+                        className="h-10 px-2 rounded-sm border border-outline-variant bg-surface-bright text-sm w-full"
+                      >
+                        <option value={0}>— aktivitas —</option>
+                        {aktivitasMaster.map((a) => <option key={a.idAktivitas} value={a.idAktivitas}>{a.namaAktivitas} — {parseFloat(a.persentase).toFixed(2)}%</option>)}
+                      </select>
+                      
+                      <select 
+                        value={row.idPegawai} 
+                        onChange={(e) => updateRow(idx, { idPegawai: Number(e.target.value) })} 
+                        className="h-10 px-2 rounded-sm border border-outline-variant bg-surface-bright text-sm w-full"
+                      >
+                        <option value={0}>— pegawai —</option>
+                        {pegawai.map((p) => <option key={p.idPegawai} value={p.idPegawai}>{p.namaPegawai}</option>)}
+                      </select>
+
+                      <button 
+                        type="button" 
+                        onClick={() => removeRow(idx)} 
+                        className="h-10 sm:h-10 w-full sm:w-10 grid place-items-center rounded-sm border border-outline-variant text-error hover:bg-error-container sm:self-center transition"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
                     </div>
                   ))}
                 </div>
