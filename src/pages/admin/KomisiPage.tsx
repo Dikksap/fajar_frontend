@@ -63,9 +63,8 @@ export default function KomisiPage() {
 
   const getAktivitasName = (r: Komisi) => r.aktivitas?.namaAktivitas ?? r.peranTugas ?? `#${r.idAktivitas ?? "?"}`;
   const getTgl = (r: Komisi) => {
-    const iso = r.penjualan?.tanggalKeluar ?? r.pembelian?.tanggalMasuk;
-    if (!iso) return "—";
-    try { return new Date(iso).toLocaleDateString("id-ID"); } catch { return iso.slice(0, 10); }
+    if (!r.createdAt) return "—";
+    try { return new Date(r.createdAt).toLocaleDateString("id-ID"); } catch { return r.createdAt.slice(0, 10); }
   };
 
   const filtered = data.filter((r) => {

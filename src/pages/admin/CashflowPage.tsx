@@ -13,6 +13,7 @@ function fmtTgl(iso: string) {
   try { return new Date(iso).toLocaleDateString("id-ID"); } catch { return iso.slice(0, 10); }
 }
 function fmtRelatif(iso: string) {
+  if (!iso) return "—";
   const t = new Date(iso).getTime();
   if (isNaN(t)) return "—";
   const d = Date.now() - t;
@@ -116,7 +117,11 @@ export default function CashflowPage() {
   const pemasukanList = filtered.filter((c) => c.tipe === "Pemasukan");
   const pengeluaranList = filtered.filter((c) => c.tipe === "Pengeluaran");
   const sortedFiltered = [...filtered].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() || b.idCashflow - a.idCashflow
+    (a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta || b.idCashflow - a.idCashflow;
+    }
   );
 
   const PAGE_SIZE = 10;
@@ -205,7 +210,7 @@ export default function CashflowPage() {
     <tr className="border-b border-outline-variant/20 hover:bg-surface-container-low transition group">
       <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant w-[64px]">#{c.idCashflow}</td>
       <td className="py-2.5 px-4 text-sm text-on-surface w-[100px]">{fmtTgl(c.tanggal)}</td>
-      <td className="py-2.5 px-4 text-xs text-on-surface-variant w-[100px]" title={new Date(c.createdAt).toLocaleString("id-ID")}>{fmtRelatif(c.createdAt)}</td>
+      <td className="py-2.5 px-4 text-xs text-on-surface-variant w-[100px]" title={c.createdAt ? new Date(c.createdAt).toLocaleString("id-ID") : ""}>{fmtRelatif(c.createdAt)}</td>
       <td className="py-2.5 px-4 w-[120px]">
         <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${c.tipe === "Pemasukan" ? "bg-primary/10 text-primary" : "bg-error/10 text-error"}`}>
           <span className="material-symbols-outlined text-[13px]">{c.tipe === "Pemasukan" ? "arrow_upward" : "arrow_downward"}</span>

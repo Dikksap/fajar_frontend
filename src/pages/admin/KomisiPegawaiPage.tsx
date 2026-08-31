@@ -358,7 +358,7 @@ export default function KomisiPegawaiPage() {
                                   <td className="py-2.5 px-4 text-on-surface-variant">{i + 1}</td>
                                   <td className="py-2.5 px-4 text-on-surface-variant">
                                     {k.idPenjualan ? `Penjualan #${k.idPenjualan}` : k.idPembelian ? `Pembelian #${k.idPembelian}` : "—"}
-                                    <div className="text-xs text-on-surface-variant/70">{k.penjualan?.tanggalKeluar ? fmtTgl(k.penjualan.tanggalKeluar) : k.pembelian?.tanggalMasuk ? fmtTgl(k.pembelian.tanggalMasuk) : ""}</div>
+                                    <div className="text-xs text-on-surface-variant/70">{k.createdAt ? fmtTgl(k.createdAt) : ""}</div>
                                   </td>
                                   <td className="py-2.5 px-4">
                                     <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/15 text-primary">
@@ -399,7 +399,7 @@ export default function KomisiPegawaiPage() {
                                 <span className="text-on-surface-variant truncate">
                                   {k.idPenjualan ? `Penjualan #${k.idPenjualan}` : k.idPembelian ? `Pembelian #${k.idPembelian}` : "—"}
                                 </span>
-                                <span className="text-on-surface-variant/70 shrink-0">{k.penjualan?.tanggalKeluar ? fmtTgl(k.penjualan.tanggalKeluar) : k.pembelian?.tanggalMasuk ? fmtTgl(k.pembelian.tanggalMasuk) : ""}</span>
+                                 <span className="text-on-surface-variant/70 shrink-0">{k.createdAt ? fmtTgl(k.createdAt) : ""}</span>
                               </div>
                               <div className="flex items-center justify-between gap-2 text-xs">
                                 <span className="text-on-surface truncate">
