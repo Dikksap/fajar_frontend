@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
-import { getKomisiByPegawai, type Komisi, type KomisiQuery } from "../../lib/komisi";
+import { getKomisiByPegawai, type Komisi } from "../../lib/komisi";
 
 function fmtIDR(s: string) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(s));
