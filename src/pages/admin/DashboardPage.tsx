@@ -21,6 +21,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { localMonthStr } from "../../lib/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -158,7 +159,7 @@ export default function DashboardPage() {
   const [bulanErr, setBulanErr] = useState<string | null>(null);
 
   const [periodeMode, setPeriodeMode] = useState<"all" | "periode" | "bulanTahun" | "range">("all");
-  const [periodeVal, setPeriodeVal] = useState(new Date().toISOString().slice(0, 7));
+  const [periodeVal, setPeriodeVal] = useState(localMonthStr());
   const [bulanVal, setBulanVal] = useState("");
   const [tahunVal, setTahunVal] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -329,7 +330,7 @@ export default function DashboardPage() {
                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
              </>
            )}
-           {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(new Date().toISOString().slice(0, 7)); setBulanVal(""); setTahunVal(""); setStartDate(""); setEndDate(""); setPeriodeMode("all"); }} className="w-full sm:w-auto h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-xs font-medium">Reset</button>}
+           {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(localMonthStr()); setBulanVal(""); setTahunVal(""); setStartDate(""); setEndDate(""); setPeriodeMode("all"); }} className="w-full sm:w-auto h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-xs font-medium">Reset</button>}
          </div>
          <p className="text-xs text-on-surface-variant mt-2">Filter ini berlaku untuk grafik dan tabel bulanan di bawah. Ringkasan di atas bersifat kumulatif all-time.</p>
        </div>

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from "react";
 import { getKomisi, getKomisiSummary, getKomisiByPegawai, getKomisiById, type Komisi, type KomisiSummary } from "../../lib/komisi";
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
 import { getAktivitas, type Aktivitas } from "../../lib/aktivitas";
+import { localMonthStr } from "../../lib/utils";
 
 function fmtIDR(s: string) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(s));
@@ -24,7 +25,7 @@ export default function KomisiPage() {
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
 
-  const currentPeriode = new Date().toISOString().slice(0, 7);
+  const currentPeriode = localMonthStr();
   const [periodeMode, setPeriodeMode] = useState<"all" | "periode" | "tanggal" | "range" | "bulanTahun">("periode");
   const [periodeVal, setPeriodeVal] = useState(currentPeriode);
   const [tanggalVal, setTanggalVal] = useState("");

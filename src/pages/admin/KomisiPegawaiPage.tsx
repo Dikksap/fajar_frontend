@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
 import { getKomisiByPegawai, type Komisi } from "../../lib/komisi";
+import { localDateStr, localMonthStr } from "../../lib/utils";
 
 function fmtIDR(s: string) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(s));
@@ -71,8 +72,8 @@ export default function KomisiPegawaiPage() {
   const [err, setErr] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [filterMode, setFilterMode] = useState<"bulan" | "hari">("bulan");
-  const [periode, setPeriode] = useState(() => new Date().toISOString().slice(0, 7));
-  const [tanggal, setTanggal] = useState(() => new Date().toISOString().slice(0, 10));
+  const [periode, setPeriode] = useState(() => localMonthStr());
+  const [tanggal, setTanggal] = useState(() => localDateStr());
   const [exporting, setExporting] = useState<number | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -226,7 +227,7 @@ export default function KomisiPegawaiPage() {
             <input type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-container-lowest text-sm w-full sm:w-auto" />
           )}
           <div className="flex gap-2 self-start">
-            <button onClick={() => { if (filterMode === "bulan") setPeriode(new Date().toISOString().slice(0, 7)); else setTanggal(new Date().toISOString().slice(0, 10)); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium whitespace-nowrap">
+            <button onClick={() => { if (filterMode === "bulan") setPeriode(localMonthStr()); else setTanggal(localDateStr()); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium whitespace-nowrap">
               {filterMode === "bulan" ? "Bulan Ini" : "Hari Ini"}
             </button>
             <button onClick={() => { if (filterMode === "bulan") setPeriode(""); else setTanggal(""); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-lowest text-xs font-medium">

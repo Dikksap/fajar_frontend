@@ -3,6 +3,7 @@ import { createPenjualan, getPenjualan, getPenjualanById, type Penjualan } from 
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
 import { getPembelian, type Pembelian, type PembelianQuery } from "../../lib/pembelian";
 import { getAktivitas, getAktivitasAktif, type Aktivitas } from "../../lib/aktivitas";
+import { localDateStr, localMonthStr } from "../../lib/utils";
 
 function fmtIDR(s: string | number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(s));
@@ -20,7 +21,7 @@ export default function PenjualanPage() {
   const [err, setErr] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
-  const currentPeriode = new Date().toISOString().slice(0, 7);
+  const currentPeriode = localMonthStr();
   const [periodeMode, setPeriodeMode] = useState<"all" | "periode" | "tanggal" | "range" | "bulanTahun">("periode");
   const [periodeVal, setPeriodeVal] = useState(currentPeriode);
   const [tanggalVal, setTanggalVal] = useState("");
@@ -30,7 +31,7 @@ export default function PenjualanPage() {
   const [tahunVal, setTahunVal] = useState("");
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ imei5: "", tanggalKeluar: new Date().toISOString().slice(0, 10), hargaJual: "", profitKotor: "" });
+  const [form, setForm] = useState({ imei5: "", tanggalKeluar: localDateStr(), hargaJual: "", profitKotor: "" });
   const [aktivitasRows, setAktivitasRows] = useState<{ idAktivitas: number; idPegawai: number }[]>([{ idAktivitas: 0, idPegawai: 0 }]);
   const [formErr, setFormErr] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -103,7 +104,7 @@ export default function PenjualanPage() {
   const selectedPembelian = pembelianMap.get(form.imei5);
 
   const openCreate = () => {
-    setForm({ imei5: displayImei[0] ?? "", tanggalKeluar: new Date().toISOString().slice(0, 10), hargaJual: "", profitKotor: "" });
+    setForm({ imei5: displayImei[0] ?? "", tanggalKeluar: localDateStr(), hargaJual: "", profitKotor: "" });
     setAktivitasRows([{ idAktivitas: aktivitasMaster[0]?.idAktivitas ?? 0, idPegawai: pegawai[0]?.idPegawai ?? 0 }]);
     setFormErr(null); setShowForm(true);
   };

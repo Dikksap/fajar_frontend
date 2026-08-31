@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCashflow, createCashflow, updateCashflow, deleteCashflow, type Cashflow, type CashflowQuery } from "../../lib/cashflow";
+import { localDateStr } from "../../lib/utils";
 
 function fmtIDR(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n));
@@ -127,7 +128,7 @@ export default function CashflowPage() {
 
   const openCreate = (tipe?: "Pemasukan" | "Pengeluaran") => {
     setEditing(null);
-    setFormTanggal(new Date().toISOString().slice(0, 10));
+    setFormTanggal(localDateStr());
     setFormTipe(tipe ?? "Pemasukan");
     setFormNominal("");
     setFormKeterangan("");

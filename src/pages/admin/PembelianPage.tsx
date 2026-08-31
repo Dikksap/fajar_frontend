@@ -4,6 +4,7 @@ import { createUnitHp } from "../../lib/unitHp";
 import { getKatalogModel, type KatalogModel } from "../../lib/katalogModel";
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
 import { getAktivitas, getAktivitasAktif, type Aktivitas } from "../../lib/aktivitas";
+import { localDateStr, localMonthStr } from "../../lib/utils";
 
 export default function PembelianPage() {
   const [data, setData] = useState<Pembelian[]>([]);
@@ -14,7 +15,7 @@ export default function PembelianPage() {
   const [err, setErr] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
-  const currentPeriode = new Date().toISOString().slice(0, 7);
+  const currentPeriode = localMonthStr();
   const [periodeMode, setPeriodeMode] = useState<"all" | "periode" | "tanggal" | "range" | "bulanTahun">("periode");
   const [periodeVal, setPeriodeVal] = useState(currentPeriode);
   const [tanggalVal, setTanggalVal] = useState("");
@@ -24,7 +25,7 @@ export default function PembelianPage() {
   const [tahunVal, setTahunVal] = useState("");
 
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ imei5: "", tanggalMasuk: new Date().toISOString().slice(0, 10), hargaBeli: "", idModel: 0, kapasitasGb: "", warna: "", regionGaransi: "Inter", batteryHealth: "", keteranganKondisi: "" });
+  const [form, setForm] = useState({ imei5: "", tanggalMasuk: localDateStr(), hargaBeli: "", idModel: 0, kapasitasGb: "", warna: "", regionGaransi: "Inter", batteryHealth: "", keteranganKondisi: "" });
   const [aktivitasRows, setAktivitasRows] = useState<{ idAktivitas: number; idPegawai: number }[]>([{ idAktivitas: 0, idPegawai: 0 }]);
   const [formErr, setFormErr] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -75,7 +76,7 @@ export default function PembelianPage() {
   });
 
   const openCreate = () => {
-    setForm({ imei5: "", tanggalMasuk: new Date().toISOString().slice(0, 10), hargaBeli: "", idModel: katalogList[0]?.idModel ?? 0, kapasitasGb: "", warna: "", regionGaransi: "Inter", batteryHealth: "", keteranganKondisi: "" });
+    setForm({ imei5: "", tanggalMasuk: localDateStr(), hargaBeli: "", idModel: katalogList[0]?.idModel ?? 0, kapasitasGb: "", warna: "", regionGaransi: "Inter", batteryHealth: "", keteranganKondisi: "" });
     setAktivitasRows([{ idAktivitas: aktivitasMaster[0]?.idAktivitas ?? 0, idPegawai: pegawai[0]?.idPegawai ?? 0 }]);
     setFormErr(null); setShowForm(true);
   };
