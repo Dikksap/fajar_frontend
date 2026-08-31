@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { getKomisi, getKomisiSummary, getKomisiByPegawai, getKomisiById, type Komisi, type KomisiSummary } from "../../lib/komisi";
 import { getPegawai, type Pegawai } from "../../lib/pegawai";
 import { getAktivitas, type Aktivitas } from "../../lib/aktivitas";
@@ -212,8 +212,8 @@ export default function KomisiPage() {
                       groups.map((group) => {
                         const collapsed = collapsedKeys.has(group.key);
                         return (
-                          <>
-                            <tr key={group.key} className="bg-surface-container border-b border-outline-variant/40 cursor-pointer hover:bg-surface-container-high transition" onClick={() => toggleGroup(group.key)}>
+                          <Fragment key={group.key}>
+                            <tr className="bg-surface-container border-b border-outline-variant/40 cursor-pointer hover:bg-surface-container-high transition" onClick={() => toggleGroup(group.key)}>
                               <td className="py-2.5 px-4 text-center">
                                 <span className="material-symbols-outlined text-[18px] text-on-surface-variant">{collapsed ? "chevron_right" : "expand_more"}</span>
                               </td>
@@ -253,7 +253,7 @@ export default function KomisiPage() {
                                 <td className="py-2.5 px-4 text-right font-mono font-semibold text-primary">{fmtIDR(r.nominalKomisi)}</td>
                               </tr>
                             ))}
-                          </>
+                          </Fragment>
                         );
                       })
                     ) : (

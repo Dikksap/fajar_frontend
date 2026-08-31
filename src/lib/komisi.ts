@@ -12,8 +12,8 @@ export type Komisi = {
   createdAt?: string | null;
   pegawai?: { idPegawai: number; namaPegawai: string };
   aktivitas?: { idAktivitas: number; namaAktivitas: string; persentase: string };
-  penjualan?: { idPenjualan: number; tanggalKeluar?: string; unitHp?: { imei5: string; model?: { namaModel: string } } };
-  pembelian?: { idPembelian: number; tanggalMasuk?: string; imei5: string; unitHp?: { imei5: string; model?: { namaModel: string } } };
+  penjualan?: { idPenjualan: number; tanggalKeluar?: string; hargaJual?: string; profitKotor?: string; unitHp?: { imei5: string; model?: { namaModel: string } } };
+  pembelian?: { idPembelian: number; tanggalMasuk?: string; hargaBeli?: string; imei5: string; unitHp?: { imei5: string; model?: { namaModel: string } } };
 };
 
 export type KomisiSummary = {

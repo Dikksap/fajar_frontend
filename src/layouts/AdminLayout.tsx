@@ -36,6 +36,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: "account_balance",
     items: [
       { to: "/admin/komisi", label: "Komisi", icon: "payments" },
+      { to: "/admin/komisi-pegawai", label: "Komisi Pegawai", icon: "people" },
       { to: "/admin/cashflow", label: "Cashflow", icon: "account_balance_wallet" },
     ],
   },
