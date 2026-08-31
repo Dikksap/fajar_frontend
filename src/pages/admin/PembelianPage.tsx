@@ -52,25 +52,29 @@ export default function PembelianPage() {
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); } }, [toast]);
 
   const filtered = data.filter((r) => {
-    if (!q.trim()) return true;
-    const s = q.toLowerCase();
-    const aktivText = (r.aktivitas ?? []).map((a) => `${a.aktivitas.namaAktivitas} ${a.pegawai.namaPegawai}`).join(" ").toLowerCase();
-    if (!r.imei5.toLowerCase().includes(s) && !(r.unitHp?.model?.namaModel.toLowerCase().includes(s) ?? false) && !aktivText.includes(s) && !String(r.idPembelian).includes(s)) return false;
-    if (periodeMode === "all") return true;
+    if (q.trim()) {
+      const s = q.toLowerCase();
+      const aktivText = (r.aktivitas ?? []).map((a) => `${a.aktivitas.namaAktivitas} ${a.pegawai.namaPegawai}`).join(" ").toLowerCase();
+      if (!r.imei5.toLowerCase().includes(s) && !(r.unitHp?.model?.namaModel.toLowerCase().includes(s) ?? false) && !aktivText.includes(s) && !String(r.idPembelian).includes(s)) return false;
+    }
     const tgl = new Date(r.tanggalMasuk);
+    const y = tgl.getFullYear();
+    const m = tgl.getMonth() + 1;
+    const d = tgl.getDate();
+    const tglStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    if (periodeMode === "all") return true;
     if (periodeMode === "periode" && periodeVal) {
-      const m = periodeVal.match(/^(\d{4})-(\d{2})$/);
-      if (m) return tgl.getUTCFullYear() === Number(m[1]) && tgl.getUTCMonth() === Number(m[2]) - 1;
+      const per = periodeVal.match(/^(\d{4})-(\d{2})$/);
+      if (per) return y === Number(per[1]) && m === Number(per[2]);
     }
     if (periodeMode === "tanggal" && tanggalVal) {
-      return tgl.toISOString().slice(0, 10) === tanggalVal;
+      return tglStr === tanggalVal;
     }
     if (periodeMode === "range" && startDate && endDate) {
-      const sd = new Date(startDate); const ed = new Date(endDate);
-      return tgl >= sd && tgl <= ed;
+      return tglStr >= startDate && tglStr <= endDate;
     }
     if (periodeMode === "bulanTahun" && bulanVal && tahunVal) {
-      return tgl.getUTCFullYear() === Number(tahunVal) && tgl.getUTCMonth() === Number(bulanVal) - 1;
+      return y === Number(tahunVal) && m === Number(bulanVal);
     }
     return true;
   });
