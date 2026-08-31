@@ -74,47 +74,14 @@ export default function LoginPage() {
             <span className="text-[13px] font-semibold tracking-[0.14em] text-primary leading-none">LUXE</span>
             <span className="text-[11px] font-medium tracking-[0.08em] text-on-surface-variant leading-none">INVENTORY</span>
           </div>
-          <span className="hidden sm:inline-flex ml-3 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-semibold tracking-wide">
-            PREMIUM ELECTRONICS
-          </span>
+
         </div>
-        <div className="hidden md:flex items-center gap-2 text-xs text-on-surface-variant">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          System operational
-        </div>
+
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-[1280px] grid lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-6 items-center">
-          <div className="hidden lg:flex flex-col justify-center px-8 xl:px-12 py-10">
-            <div className="inline-flex items-center gap-2 mb-8">
-              <span className="h-px w-8 bg-primary" />
-              <span className="text-xs font-semibold tracking-[0.14em] text-primary">CORPORATE MODERN — MINIMALIST</span>
-            </div>
-            <h1 className="font-inter text-[42px] xl:text-[48px] font-bold leading-[0.95] tracking-[-0.02em] text-on-surface">
-              Kelola inventaris
-              <span className="block text-primary">premium dengan</span>
-              <span className="block text-on-surface">presisi mutlak.</span>
-            </h1>
-            <p className="mt-5 text-[18px] leading-7 text-on-surface-variant max-w-[520px]">
-              Platform high-end untuk elektronik premium. Stok, harga, dan pergerakan barang dalam satu tampilan yang bersih dan terpercaya.
-            </p>
-            <div className="mt-10 grid grid-cols-3 gap-4 max-w-[520px]">
-              {[
-                { k: "99.9%", label: "Uptime SLA", sub: "Infrastruktur stabil" },
-                { k: "< 50ms", label: "Realtime sync", sub: "Update stok instan" },
-                { k: "2.4k+", label: "SKU terkelola", sub: "Katalog premium" },
-              ].map((s) => (
-                <div key={s.k} className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 shadow-soft">
-                  <div className="text-[20px] font-semibold tracking-tight text-primary">{s.k}</div>
-                  <div className="text-xs font-semibold text-on-surface mt-1">{s.label}</div>
-                  <div className="text-[11px] text-on-surface-variant leading-tight">{s.sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="w-full max-w-[480px] mx-auto lg:mx-0 lg:ml-auto">
+        <div className="w-full max-w-[480px] grid items-center">
+          <div className="w-full max-w-[480px] mx-auto">
             <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-soft overflow-hidden">
               <div className="h-1 w-full bg-primary" />
               <div className="p-7 sm:p-8">
@@ -213,25 +180,12 @@ export default function LoginPage() {
                     )}
                   </button>
 
-                  <div className="rounded-lg bg-surface-container border border-outline-variant/30 px-3.5 py-3 flex gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <p className="text-xs leading-5 text-on-surface-variant">
-                      Endpoint: <code className="px-1.5 py-0.5 rounded bg-surface-container-high text-[11px] font-mono text-on-surface">POST /auth/login</code> — hanya role <span className="font-semibold text-primary">admin</span> yang bisa lanjut ke <code className="px-1 py-0.5 rounded bg-surface-container-high text-[11px] font-mono">/admin</code>.
-                    </p>
-                  </div>
+
                 </form>
               </div>
-              <div className="bg-surface-container-low border-t border-outline-variant/30 px-7 sm:px-8 py-3 flex items-center justify-between">
-                <span className="text-[11px] font-medium tracking-wide text-on-surface-variant flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-container border border-secondary/20" />
-                  API {import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000"}
-                </span>
-                <span className="text-[11px] text-outline">JWT • Bearer</span>
-              </div>
+
             </div>
-            <p className="text-center text-xs text-on-surface-variant mt-4 px-4">
-              Non-admin akan diarahkan ke 403. Token disimpan di <code className="font-mono">localStorage.access_token</code>.
-            </p>
+
           </div>
         </div>
       </main>
@@ -239,7 +193,6 @@ export default function LoginPage() {
       <footer className="border-t border-outline-variant/30 bg-surface-container-lowest">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-8 h-12 flex items-center justify-between text-xs text-on-surface-variant">
           <span>© 2026 Luxe Inventory — Premium Electronics Management</span>
-          <span className="hidden sm:inline">Swagger: http://localhost:3000/api</span>
         </div>
       </footer>
     </div>
