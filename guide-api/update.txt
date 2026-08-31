@@ -1,0 +1,145 @@
+========================================
+SUMMARY PERUBAHAN ENDPOINT & SCHEMA
+Tanggal: 2026-08-30
+Schema: update-aktivitas (20260830122530)
+========================================
+
+1. RINGKASAN SCHEMA
+------------------
+- Hapus enum PeranTugas (PencariBarang, CODBeli, PencariPembeli, CODJual)
+- Hapus model MasterAturanKomisi -> ganti MasterAktivitas
+- MasterAktivitas: idAktivitas PK, namaAktivitas unique varchar50, persentase decimal(5,2), statusAktif boolean default true
+  Aktivitas sekarang DATA DINAMIS (bisa tambah admin), bukan enum/field tetap.
+- Hapus field tetap di PembelianHp/PenjualanHp:
+  PembelianHp: idPicSeller, idPicCodBeli -> HAPUS
+  PenjualanHp: idPicBuyer, idPicCodJual -> HAPUS
+- Tambah join tabel dinamis:
+  AktivitasPembelian {idPembelian, idAktivitas, idPegawai} unique [idPembelian,idAktivitas] -> PembelianHp + MasterAktivitas + Pegawai
+  AktivitasPenjualan {idPenjualan, idAktivitas, idPegawai} unique [idPenjualan,idAktivitas] -> PenjualanHp + MasterAktivitas + Pegawai
+- KomisiTransaksi refactor:
+  lama: idPenjualan required, peranTugas enum, pegawai
+  baru: idPembelian nullable, idPenjualan nullable (komisi bisa dari pembelian MAUPUN penjualan), idAktivitas FK MasterAktivitas, persentaseBerlaku snapshot decimal(5,2), nominalKomisi
+- Relasi baru:
+  MasterAktivitas -- AktivitasPembelian -- Pegawai -- PembelianHp
+                -- AktivitasPenjualan -- Pegawai -- PenjualanHp
+  PembelianHp -- KomisiTransaksi -- MasterAktivitas -- Pegawai
+  PenjualanHp -- KomisiTransaksi -- MasterAktivitas -- Pegawai
+
+Migration: reset DB (hapus data lama 16 komisi, 4 pembelian, dll) + migrate dev update-aktivitas + seed admin (admin@email.com/admin123)
+
+2. ENDPOINT YANG DIHAPUS / DIGANTI
+----------------------------------
+HAPUS (duplikat 1 table 2 CRUD):
+  - src/aturan-komisi -> GET /aturan-komisi, POST /aturan-komisi, PATCH /aturan-komisi/:id (pakai master_aturan_komisi, sekarang tidak ada)
+  - src/master-aktivitas -> GET /master-aktivitas, POST /master-aktivitas, PATCH /master-aktivitas/:id (duplikat, sudah dihapus)
+
+DIGANTI / BARU (single source of truth):
+  -> src/aktivitas -> 6 endpoint untuk table master_aktivitas
+
+3. ENDPOINT AKTIF SAAT INI (FINAL)
+----------------------------------
+Auth (tetap):
+  POST   /auth/login
+  POST   /auth/register (via users)
+  GET    /users, POST /users, GET /users/:id, PATCH /users/:id, DELETE /users/:id
+
+Pegawai:
+  GET    /pegawai
+  GET    /pegawai/:id
+  POST   /pegawai {namaPegawai}
+  PATCH  /pegawai/:id
+  DELETE /pegawai/:id
+
+Katalog-Model:
+  GET    /katalog-model
+  GET    /katalog-model/:id
+  POST   /katalog-model {namaModel}
+  PATCH  /katalog-model/:id
+  DELETE /katalog-model/:id
+
+Aktivitas (BARU, ganti aturan-komisi/master-aktivitas):
+  GET    /aktivitas                 -> semua (order id desc)
+  GET    /aktivitas/aktif           -> hanya statusAktif=true
+  GET    /aktivitas/:id             -> detail
+  POST   /aktivitas {namaAktivitas, persentase, statusAktif?}
+  PATCH  /aktivitas/:id {namaAktivitas?, persentase?, statusAktif?}
+  PATCH  /aktivitas/:id/nonaktifkan -> set statusAktif=false (idempotent)
+  Semua butuh JWT. Error 409 jika nama duplikat, 404 jika id tidak ada.
+
+Unit-HP:
+  POST   /unit-hp {imei5, idModel, kapasitasGb?, warna?, regionGaransi?, batteryHealth?, keteranganKondisi?, statusStok?}
+  GET    /unit-hp (include model)
+  GET    /unit-hp/:imei5 (include model+campur pembelian/penjualan)
+  PATCH  /unit-hp/:imei5 (imei5 tidak bisa ubah)
+
+Pembelian (UPDATED - dinamis):
+  Lama: POST {imei5, tanggalMasuk, hargaBeli, idPicSeller, idPicCodBeli}
+  Baru: POST /pembelian {imei5, tanggalMasuk, hargaBeli, aktivitas?: [{idAktivitas, idPegawai}]}
+        aktivitas dinamis, contoh [{idAktivitas:1, idPegawai:1}] untuk Pencari Barang
+        backward compat: masih terima idPicSeller/idPicCodBeli (akan mapping otomatis ke aktivitas jika aktivitas kosong)
+        Dalam transaction: create pembelian + aktivitas_pembelian + komisi (nominal = hargaBeli * persentase /100, snapshot persentase)
+  GET    /pembelian (include unitHp.model + aktivitas.aktivitas+pegawai + komisi.pegawai+aktivitas)
+  GET    /pembelian/:id
+
+Penjualan (UPDATED - dinamis):
+  Lama: POST {imei5, tanggalKeluar, hargaJual, profitKotor?, idPicBuyer, idPicCodJual} -> auto 4 komisi fixed enum
+  Baru: POST /api/penjualan {imei5, tanggalKeluar, hargaJual, profitKotor?, aktivitas?: [{idAktivitas, idPegawai}]}
+        aktivitas dinamis, contoh Pencari Pembeli + COD Jual
+        backward compat: idPicBuyer/idPicCodJual masih dipetakan jika aktivitas kosong
+        Auto: profit = hargaJual - hargaBeli (jika profitKotor tidak dikirim), buat aktivitas_penjualan + komisi (nominal = profit * persentase /100), update unit status Terjual
+  GET    /api/penjualan
+  GET    /api/penjualan/:id
+
+Komisi (UPDATED):
+  Lama: peranTugas enum, hanya dari penjualan, include picBuyer
+  Baru: idAktivitas FK, bisa dari pembelian ATAU penjualan, include aktivitas + pegawai + pembelian/penjualan
+  GET    /api/komisi
+  GET    /api/komisi/:id
+  GET    /api/komisi/summary -> {totalKomisi, totalTransaksi, perPegawai[], perAktivitas[], perPeran(alias)}
+  GET    /api/komisi/pegawai/:id -> filter idPegawai
+
+4. CARA PAKAI BARU (CONTOH)
+---------------------------
+# 1. buat aktivitas dinamis (ganti master aturan)
+POST /aktivitas { "namaAktivitas":"Pencari Barang", "persentase":10 }
+POST /aktivitas { "namaAktivitas":"COD Beli", "persentase":5 }
+POST /aktivitas { "namaAktivitas":"Pencari Pembeli", "persentase":10 }
+POST /aktivitas { "namaAktivitas":"COD Jual", "persentase":5 }
+
+# 2. cek aktif only
+GET /aktivitas/aktif
+
+# 3. nonaktifkan
+PATCH /aktivitas/2/nonaktifkan
+
+# 4. pembelian dengan aktivitas dinamis
+POST /pembelian {
+  "imei5":"12345", "tanggalMasuk":"2026-08-30", "hargaBeli":3500000,
+  "aktivitas":[{"idAktivitas":1,"idPegawai":1},{"idAktivitas":2,"idPegawai":2}]
+}
+
+# 5. penjualan dengan aktivitas dinamis
+POST /api/penjualan {
+  "imei5":"12345", "tanggalKeluar":"2026-08-31", "hargaJual":5000000,
+  "aktivitas":[{"idAktivitas":3,"idPegawai":3},{"idAktivitas":4,"idPegawai":4}]
+}
+# -> auto komisi snapshot persentaseBerlaku, histori tidak berubah jika master diubah
+
+5. FILE DOKUMENTASI
+-------------------
+- pegawai.txt (lama, masih valid tapi pembelian/penjualan contoh idPic* sudah deprecated, pakai aktivitas)
+- katalog-model.txt (valid)
+- aturan-komisi.txt (DEPRECATED, diganti aktivitas)
+- unit.txt (valid)
+- pembelian.txt (perlu update: ganti idPicSeller/CodBeli -> aktivitas)
+- penjualan&komisi.txt (perlu update: ganti fixed peran -> aktivitas dinamis)
+- katalog-model.txt, pegawai.txt tetap
+
+6. CATATAN MIGRASI
+------------------
+- Semua endpoint butuh JWT kecuali POST /users (public)
+- Swagger di /api, perlu Authorize Bearer token
+- Penjualan/Komisi tetap pakai prefix /api/penjualan dan /api/komisi (beda dengan /pegawai tanpa prefix) sesuai spec awal
+- Aktivitas baru pakai /aktivitas (tanpa /api prefix)
+- Untuk kompatibilitas, pembelian/penjualan masih terima field lama idPic* tapi akan deprecated, disarankan pakai aktivitas array
+

@@ -4,6 +4,10 @@ import { getCashflow, createCashflow, updateCashflow, deleteCashflow, type Cashf
 function fmtIDR(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n));
 }
+function fmtRupiahInput(v: string) {
+  const digits = v.replace(/[^\d]/g, "");
+  return digits ? Number(digits).toLocaleString("id-ID") : "";
+}
 function fmtTgl(iso: string) {
   try { return new Date(iso).toLocaleDateString("id-ID"); } catch { return iso.slice(0, 10); }
 }
@@ -39,9 +43,7 @@ export default function CashflowPage() {
   const [formTipe, setFormTipe] = useState<"Pemasukan" | "Pengeluaran">("Pemasukan");
   const [formNominal, setFormNominal] = useState("");
   const [formKeterangan, setFormKeterangan] = useState("");
-  const [formIdPembelian, setFormIdPembelian] = useState("");
-  const [formIdPenjualan, setFormIdPenjualan] = useState("");
-  const [formIdKomisi, setFormIdKomisi] = useState("");
+
   const [formErr, setFormErr] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -129,9 +131,6 @@ export default function CashflowPage() {
     setFormTipe(tipe ?? "Pemasukan");
     setFormNominal("");
     setFormKeterangan("");
-    setFormIdPembelian("");
-    setFormIdPenjualan("");
-    setFormIdKomisi("");
     setFormErr(null);
     setShowForm(true);
   };
@@ -139,11 +138,8 @@ export default function CashflowPage() {
     setEditing(c);
     setFormTanggal(c.tanggal.slice(0, 10));
     setFormTipe(c.tipe);
-    setFormNominal(String(c.nominal));
+    setFormNominal(fmtRupiahInput(String(c.nominal)));
     setFormKeterangan(c.keterangan ?? "");
-    setFormIdPembelian(c.idPembelian != null ? String(c.idPembelian) : "");
-    setFormIdPenjualan(c.idPenjualan != null ? String(c.idPenjualan) : "");
-    setFormIdKomisi(c.idKomisi != null ? String(c.idKomisi) : "");
     setFormErr(null);
     setShowForm(true);
   };
@@ -153,11 +149,8 @@ export default function CashflowPage() {
     setFormErr(null);
     const vTanggal = formTanggal;
     const vTipe = formTipe;
-    const vNominal = Number(formNominal);
+    const vNominal = Number(String(formNominal).replace(/[^\d]/g, ""));
     const vKeterangan = formKeterangan.trim() || undefined;
-    const vIdPembelian = formIdPembelian ? Number(formIdPembelian) : undefined;
-    const vIdPenjualan = formIdPenjualan ? Number(formIdPenjualan) : undefined;
-    const vIdKomisi = formIdKomisi ? Number(formIdKomisi) : undefined;
 
     if (!vTanggal) return setFormErr("Tanggal wajib diisi.");
     if (!vNominal || vNominal < 0) return setFormErr("Nominal wajib diisi dan >= 0.");
@@ -169,7 +162,7 @@ export default function CashflowPage() {
         setData((prev) => prev.map((x) => (x.idCashflow === editing.idCashflow ? updated : x)));
         setToast({ msg: `Cashflow #${editing.idCashflow} diperbarui`, type: "ok" });
       } else {
-        const created = await createCashflow({ tanggal: vTanggal, tipe: vTipe, nominal: vNominal, keterangan: vKeterangan, idPembelian: vIdPembelian, idPenjualan: vIdPenjualan, idKomisi: vIdKomisi });
+        const created = await createCashflow({ tanggal: vTanggal, tipe: vTipe, nominal: vNominal, keterangan: vKeterangan });
         setData((prev) => [created, ...prev]);
         setToast({ msg: `Cashflow #${created.idCashflow} dibuat`, type: "ok" });
       }
@@ -402,7 +395,6 @@ export default function CashflowPage() {
               <div className="flex items-start justify-between gap-4 mb-1">
                 <div>
                   <h2 className="text-lg font-semibold text-on-surface">{editing ? `Edit ${editing.tipe}` : `Tambah ${formTipe}`}</h2>
-                  <p className="text-xs text-on-surface-variant mt-1">{editing ? "PATCH /api/cashflow/:id" : "POST /api/cashflow"}</p>
                 </div>
                 <button type="button" onClick={() => setShowForm(false)} className="w-8 h-8 grid place-items-center rounded-sm hover:bg-surface-container text-on-surface-variant"><span className="material-symbols-outlined">close</span></button>
               </div>
@@ -420,7 +412,10 @@ export default function CashflowPage() {
                   </div>
                   <div>
                     <label htmlFor="cf-nominal" className="text-sm font-medium text-on-surface block mb-1.5">Nominal <span className="text-error">*</span></label>
-                    <input id="cf-nominal" type="number" step="0.01" min="0" value={formNominal} onChange={(e) => setFormNominal(e.target.value)} placeholder="0" className="input-focus w-full h-11 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm pointer-events-none">Rp</span>
+                      <input id="cf-nominal" type="text" inputMode="numeric" value={formNominal} onChange={(e) => setFormNominal(fmtRupiahInput(e.target.value))} placeholder="0" className="input-focus w-full h-11 pl-10 pr-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -433,20 +428,6 @@ export default function CashflowPage() {
                 <div>
                   <label htmlFor="cf-keterangan" className="text-sm font-medium text-on-surface block mb-1.5">Keterangan</label>
                   <input id="cf-keterangan" type="text" value={formKeterangan} onChange={(e) => setFormKeterangan(e.target.value)} placeholder="Deskripsi transaksi..." className="input-focus w-full h-11 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label htmlFor="cf-pb" className="text-sm font-medium text-on-surface block mb-1.5">ID Pembelian</label>
-                    <input id="cf-pb" type="number" value={formIdPembelian} onChange={(e) => setFormIdPembelian(e.target.value)} placeholder="Opsional" className="input-focus w-full h-11 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-                  </div>
-                  <div>
-                    <label htmlFor="cf-pj" className="text-sm font-medium text-on-surface block mb-1.5">ID Penjualan</label>
-                    <input id="cf-pj" type="number" value={formIdPenjualan} onChange={(e) => setFormIdPenjualan(e.target.value)} placeholder="Opsional" className="input-focus w-full h-11 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-                  </div>
-                  <div>
-                    <label htmlFor="cf-km" className="text-sm font-medium text-on-surface block mb-1.5">ID Komisi</label>
-                    <input id="cf-km" type="number" value={formIdKomisi} onChange={(e) => setFormIdKomisi(e.target.value)} placeholder="Opsional" className="input-focus w-full h-11 px-3 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-                  </div>
                 </div>
               </div>
               <div className="mt-6 flex gap-2 justify-end">

@@ -261,10 +261,18 @@ export default function KomisiPegawaiPage() {
             const isExporting = exporting === p.idPegawai;
             return (
               <div key={p.idPegawai} className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg overflow-hidden ambient-shadow-sm">
-                <button
-                  onClick={() => setExpandedId(isOpen ? null : p.idPegawai)}
-                  className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 hover:bg-surface-container-low transition text-left gap-3"
-                >
+<div
+                   onClick={() => setExpandedId(isOpen ? null : p.idPegawai)}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                       e.preventDefault();
+                       setExpandedId(isOpen ? null : p.idPegawai);
+                     }
+                   }}
+                   role="button"
+                   tabIndex={0}
+                   className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 hover:bg-surface-container-low transition text-left gap-3 cursor-pointer"
+                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 border border-primary/15 grid place-items-center text-primary font-semibold text-xs sm:text-sm shrink-0">
                       {p.namaPegawai.charAt(0).toUpperCase()}
@@ -308,9 +316,9 @@ export default function KomisiPegawaiPage() {
                       <div className="text-xs text-on-surface-variant">Total Komisi</div>
                       <div className="font-bold text-primary">{fmtIDR(String(total))}</div>
                     </div>
-                    <span className={`material-symbols-outlined text-[20px] text-on-surface-variant transition-transform ${isOpen ? "rotate-180" : ""}`}>expand_more</span>
-                  </div>
-                </button>
+<span className={`material-symbols-outlined text-[20px] text-on-surface-variant transition-transform ${isOpen ? "rotate-180" : ""}`}>expand_more</span>
+                   </div>
+                 </div>
 
                 {isOpen && (
                   <div className="border-t border-outline-variant/30">

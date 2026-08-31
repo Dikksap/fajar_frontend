@@ -277,54 +277,56 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Filter periode — satu filter untuk grafik dan 3 tabel bulanan */}
-      <div className="mb-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 ambient-shadow-sm">
-        <div className="flex flex-wrap gap-3 items-center">
-          <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode</span>
-          <select value={periodeMode} onChange={(e) => setPeriodeMode(e.target.value as never)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm">
-            <option value="all">Semua periode</option>
-            <option value="periode">Periode</option>
-            <option value="bulanTahun">Bulan & Tahun</option>
-            <option value="range">Rentang Tanggal</option>
-          </select>
-          {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />}
-          {periodeMode === "bulanTahun" && (
-            <>
-              <input type="number" min={1} max={12} placeholder="Bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="h-9 w-20 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-              <input type="number" min={2000} max={2100} placeholder="Tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="h-9 w-24 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-            </>
-          )}
-          {periodeMode === "range" && (
-            <>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-              <span className="text-on-surface-variant">—</span>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
-            </>
-          )}
-          {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(new Date().toISOString().slice(0, 7)); setBulanVal(""); setTahunVal(""); setStartDate(""); setEndDate(""); setPeriodeMode("all"); }} className="h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-xs font-medium">Reset</button>}
-        </div>
-        <p className="text-xs text-on-surface-variant mt-2">Filter ini berlaku untuk grafik dan tabel bulanan di bawah. Ringkasan di atas bersifat kumulatif all-time.</p>
-      </div>
+{/* Filter periode — satu filter untuk grafik dan 3 tabel bulanan */}
+       <div className="mb-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-4 ambient-shadow-sm">
+         <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-start">
+           <span className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">calendar_month</span> Periode</span>
+           <select value={periodeMode} onChange={(e) => setPeriodeMode(e.target.value as never)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm">
+             <option value="all">Semua periode</option>
+             <option value="periode">Periode</option>
+             <option value="bulanTahun">Bulan & Tahun</option>
+             <option value="range">Rentang Tanggal</option>
+           </select>
+           {periodeMode === "periode" && <input type="month" value={periodeVal} onChange={(e) => setPeriodeVal(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />}
+           {periodeMode === "bulanTahun" && (
+             <>
+               <input type="number" min={1} max={12} placeholder="Bulan" value={bulanVal} onChange={(e) => setBulanVal(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+               <input type="number" min={2000} max={2100} placeholder="Tahun" value={tahunVal} onChange={(e) => setTahunVal(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+             </>
+           )}
+           {periodeMode === "range" && (
+             <>
+               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+               <span className="text-on-surface-variant">—</span>
+               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full sm:w-auto h-9 px-2.5 rounded-sm border border-outline-variant bg-surface-bright text-sm" />
+             </>
+           )}
+           {periodeMode !== "all" && <button onClick={() => { setPeriodeVal(new Date().toISOString().slice(0, 7)); setBulanVal(""); setTahunVal(""); setStartDate(""); setEndDate(""); setPeriodeMode("all"); }} className="w-full sm:w-auto h-9 px-3 rounded-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container text-xs font-medium">Reset</button>}
+         </div>
+         <p className="text-xs text-on-surface-variant mt-2">Filter ini berlaku untuk grafik dan tabel bulanan di bawah. Ringkasan di atas bersifat kumulatif all-time.</p>
+       </div>
 
-      {/* Chart real dari profit-bulanan */}
-      <div className="mb-4 bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-4 ambient-shadow-sm">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/50">
-          <h2 className="text-lg font-semibold text-on-surface">Profit Bulanan</h2>
-          <div className="hidden sm:flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary inline-block" /> Harga Jual</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#94a3b8] inline-block" /> Laba Kotor</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#fbbf24] inline-block" /> Laba Bersih</span>
-          </div>
-        </div>
-        {bulanLoading ? (
-          <div className="h-80 grid place-items-center text-sm text-on-surface-variant"><span className="inline-flex items-center gap-2"><span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" /> Memuat bulanan…</span></div>
-        ) : bulanErr ? (
-          <div className="h-80 grid place-items-center"><div className="text-center"><p className="text-sm text-error font-medium">{bulanErr}</p><button onClick={fetchBulanan} className="mt-2 text-sm text-primary hover:underline">Coba lagi</button></div></div>
-        ) : (
-          <ProfitChart data={profit} />
-        )}
-        <p className="text-xs text-on-surface-variant mt-2">GET /dashboard/profit-bulanan{queryLabel} — {profit.length === 0 ? "belum ada data" : `${profit.length} periode`}</p>
-      </div>
+{/* Chart real dari profit-bulanan */}
+       <div className="mb-4 bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-4 ambient-shadow-sm">
+         <div className="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/50">
+           <h2 className="text-lg font-semibold text-on-surface">Profit Bulanan</h2>
+           <div className="hidden sm:flex items-center gap-3 text-xs">
+             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary inline-block" /> Harga Jual</span>
+             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#94a3b8] inline-block" /> Laba Kotor</span>
+             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#fbbf24] inline-block" /> Laba Bersih</span>
+           </div>
+         </div>
+         {bulanLoading ? (
+           <div className="h-[200px] sm:h-80 grid place-items-center text-sm text-on-surface-variant"><span className="inline-flex items-center gap-2"><span className="w-4 h-4 border-2 border-outline-variant border-t-primary rounded-full animate-spin" /> Memuat bulanan…</span></div>
+         ) : bulanErr ? (
+           <div className="h-[200px] sm:h-80 grid place-items-center"><div className="text-center"><p className="text-sm text-error font-medium">{bulanErr}</p><button onClick={fetchBulanan} className="mt-2 text-sm text-primary hover:underline">Coba lagi</button></div></div>
+         ) : (
+           <div className="h-[200px] sm:h-80">
+             <ProfitChart data={profit} />
+           </div>
+         )}
+         <p className="text-xs text-on-surface-variant mt-2">GET /dashboard/profit-bulanan{queryLabel} — {profit.length === 0 ? "belum ada data" : `${profit.length} periode`}</p>
+       </div>
 
       {/* 3 tabel bulanan */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
@@ -334,8 +336,8 @@ export default function DashboardPage() {
             <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-primary">point_of_sale</span> Penjualan Bulanan</h3>
             <span className="text-xs px-2 py-1 rounded-full bg-surface-container border border-outline-variant/30">{jual.length} periode</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[760px]">
+<div className="overflow-x-auto">
+             <table className="w-full text-left border-collapse min-w-[500px]">
               <thead><tr className="bg-surface-bright border-b border-outline-variant/50 text-xs font-semibold uppercase text-on-surface-variant"><th className="py-2.5 px-3">Periode</th><th className="py-2.5 px-3 text-center">Transaksi</th><th className="py-2.5 px-3 text-right">Harga Jual</th><th className="py-2.5 px-3 text-right">Laba Kotor</th><th className="py-2.5 px-3 text-right">Komisi</th><th className="py-2.5 px-3 text-right">Laba Bersih</th></tr></thead>
               <tbody className="text-sm">
                 {bulanLoading ? <tr><td colSpan={6} className="py-10 text-center text-on-surface-variant">Memuat…</td></tr>
@@ -363,8 +365,8 @@ export default function DashboardPage() {
 <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">shopping_bag</span> Pembelian Bulanan</h3>
             <span className="text-xs px-2 py-1 rounded-full bg-surface-container border border-outline-variant/30">{beli.length} periode</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[520px]">
+<div className="overflow-x-auto">
+             <table className="w-full text-left border-collapse min-w-[400px]">
               <thead><tr className="bg-surface-bright border-b border-outline-variant/50 text-xs font-semibold uppercase text-on-surface-variant"><th className="py-2.5 px-3">Periode</th><th className="py-2.5 px-3 text-center">Transaksi</th><th className="py-2.5 px-3 text-right">Harga Beli</th><th className="py-2.5 px-3 text-right">Komisi</th></tr></thead>
               <tbody className="text-sm">
                 {bulanLoading ? <tr><td colSpan={4} className="py-10 text-center text-on-surface-variant">Memuat…</td></tr>
@@ -388,8 +390,8 @@ export default function DashboardPage() {
 <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2"><span className="material-symbols-outlined text-[18px] text-primary">trending_up</span> Profit Bulanan</h3>
             <span className="text-xs px-2 py-1 rounded-full bg-primary/10 border border-primary/15 text-primary">{profit.length} periode</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[560px]">
+<div className="overflow-x-auto">
+             <table className="w-full text-left border-collapse min-w-[450px]">
               <thead><tr className="bg-surface-bright border-b border-outline-variant/50 text-xs font-semibold uppercase text-on-surface-variant"><th className="py-2.5 px-3">Periode</th><th className="py-2.5 px-3 text-center">Penjualan</th><th className="py-2.5 px-3 text-right">Harga Jual</th><th className="py-2.5 px-3 text-right">Laba Kotor</th><th className="py-2.5 px-3 text-right">Laba Bersih</th></tr></thead>
               <tbody className="text-sm">
                   {bulanLoading ? <tr><td colSpan={5} className="py-10 text-center text-on-surface-variant">Memuat…</td></tr>

@@ -1,0 +1,215 @@
+=======================================
+API DASHBOARD - Dokumentasi
+Base URL: http://localhost:3000
+Swagger : http://localhost:3000/api
+=======================================
+
+1. AUTHENTICATION
+----------------
+Semua endpoint /dashboard butuh JWT (APP_GUARD JwtAuthGuard global).
+Ambil token:
+
+  POST /auth/login
+  Content-Type: application/json
+  { "email":"[EMAIL]", "password":"admin123" }
+  Response 200: { "access_token":"eyJhbGciOi..." }
+
+Header tiap request:
+  Authorization: Bearer <access_token>
+Tanpa header -> 401 Unauthorized
+
+2. ENDPOINTS
+------------
+
+a) GET /dashboard
+   Deskripsi : Ringkasan keseluruhan dari view_dashboard (semua data kumulatif)
+   Auth      : Bearer JWT
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/dashboard
+
+   Response 200:
+   {
+     "id": 1,
+     "totalUnit": 100,
+     "stokTersedia": 30,
+     "stokTerjual": 65,
+     "stokRetur": 5,
+     "totalPembelian": 100,
+     "totalHargaBeli": "350000000.00",
+     "totalPenjualan": 65,
+     "totalHargaJual": "422500000.00",
+     "totalProfitKotor": "72500000.00",
+     "totalKomisiPembelian": "17500000.00",
+     "totalKomisiPenjualan": "3625000.00",
+     "totalKomisi": "21125000.00",
+     "profitBersihPenjualan": "68875000.00"
+   }
+
+   Catatan: semua field Decimal dikembalikan sebagai string dengan 2 decimal.
+
+
+b) GET /dashboard/penjualan-bulanan
+   Deskripsi : Data penjualan per bulan dari view_dashboard_penjualan_bulanan
+   Auth      : Bearer JWT
+   Filter    : periode, bulan+bulan/tahun, tanggal, startDate+endDate
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/dashboard/penjualan-bulanan
+
+     curl filter periode:
+     curl -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/dashboard/penjualan-bulanan?periode=2026-08"
+
+     curl filter bulan+tahun:
+     curl -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/dashboard/penjualan-bulanan?bulan=8&tahun=2026"
+
+     curl filter date range:
+     curl -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/dashboard/penjualan-bulanan?startDate=2026-01-01&endDate=2026-08-31"
+
+   Response 200 (array, order by periode asc):
+   [
+     {
+       "periode": "2026-01-01T00:00:00.000Z",
+       "tahun": 2026,
+       "bulan": 1,
+       "periodeLabel": "2026-01",
+       "totalTransaksi": 35,
+       "totalHargaJual": "175000000.00",
+       "totalProfitKotor": "26250000.00",
+       "totalKomisi": "1312500.00",
+       "profitBersih": "24937500.00"
+     }
+   ]
+
+   Catatan: empty array jika tidak ada data.
+
+
+c) GET /dashboard/pembelian-bulanan
+   Deskripsi : Data pembelian per bulan dari view_dashboard_pembelian_bulanan
+   Auth      : Bearer JWT
+   Filter    : sama seperti penjualan-bulanan
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/dashboard/pembelian-bulanan
+
+     curl filter periode:
+     curl -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/dashboard/pembelian-bulanan?periode=2026-08"
+
+   Response 200 (array, order by periode asc):
+   [
+     {
+       "periode": "2026-01-01T00:00:00.000Z",
+       "tahun": 2026,
+       "bulan": 1,
+       "periodeLabel": "2026-01",
+       "totalTransaksi": 42,
+       "totalHargaBeli": "168000000.00",
+       "totalKomisi": "8400000.00"
+     }
+   ]
+
+
+d) GET /dashboard/profit-bulanan
+   Deskripsi : Data profit per bulan dari view_dashboard_profit_bulanan
+   Auth      : Bearer JWT
+   Filter    : sama seperti penjualan-bulanan
+   cURL:
+     curl -H "Authorization: Bearer <TOKEN>" http://localhost:3000/dashboard/profit-bulanan
+
+     curl filter periode:
+     curl -H "Authorization: Bearer <TOKEN>" "http://localhost:3000/dashboard/profit-bulanan?periode=2026-08"
+
+   Response 200 (array, order by periode asc):
+   [
+     {
+       "periode": "2026-01-01T00:00:00.000Z",
+       "tahun": 2026,
+       "bulan": 1,
+       "periodeLabel": "2026-01",
+       "totalPenjualan": 30,
+       "totalHargaJual": "150000000.00",
+       "totalProfitKotor": "22500000.00",
+       "totalKomisiPenjualan": "1125000.00",
+       "profitBersih": "21375000.00"
+     }
+   ]
+
+
+3. FILTER PARAMETERS
+-------------------
+Semua endpoint bulanan (/dashboard/penjualan-bulanan, /dashboard/pembelian-bulanan, /dashboard/profit-bulanan)
+mendukung filter query parameter berikut:
+
+a) periode (YYYY-MM)
+   Contoh: ?periode=2026-08
+   Filter 1 bulan spesifik.
+   Prioritas tertinggi, jika ada langsung dipakai.
+
+b) bulan + tahun (numeric)
+   Contoh: ?bulan=8&tahun=2026
+   ?month=8&year=2026 (alias)
+   Kedua harus ada bersamaan.
+
+c) tanggal / date (YYYY-MM-DD)
+   Contoh: ?tanggal=2026-08-15
+   Filter 1 hari spesifik.
+
+d) startDate + endDate (YYYY-MM-DD)
+   Contoh: ?startDate=2026-01-01&endDate=2026-08-31
+   Filter range tanggal.
+   Validasi: startDate tidak boleh > endDate.
+
+e) tahun / year (numeric saja)
+   Contoh: ?tahun=2026
+   Filter semua data di tahun tersebut.
+
+
+4. VALIDATION
+-------------
+- Global ValidationPipe whitelist:true transform:true
+- Semua filter opsional, tanpa filter = semua data
+- tanggal/date/startDate/endDate: @IsDateString (format YYYY-MM-DD)
+- bulan/month: @IsInt @Min(1) @Max(12)
+- tahun/year: @IsInt @Min(2000) @Max(2100)
+- periode: @IsString pattern YYYY-MM (validasi di service)
+- Error 400 jika format invalid.
+
+
+5. POWER SHELL
+--------------
+$login = Invoke-RestMethod -Uri http://localhost:3000/auth/login -Method Post -ContentType "application/json" -Body '{"email":"[EMAIL]","password":"admin123"}'
+$token = $login.access_token; $headers = @{ Authorization = "Bearer $token" }
+
+# dashboard summary
+Invoke-RestMethod -Uri http://localhost:3000/dashboard -Headers $headers
+
+# penjualan bulanan - semua
+Invoke-RestMethod -Uri http://localhost:3000/dashboard/penjualan-bulanan -Headers $headers
+
+# penjualan bulanan - filter periode
+Invoke-RestMethod -Uri "http://localhost:3000/dashboard/penjualan-bulanan?periode=2026-08" -Headers $headers
+
+# pembelian bulanan - filter range
+Invoke-RestMethod -Uri "http://localhost:3000/dashboard/pembelian-bulanan?startDate=2026-01-01&endDate=2026-06-30" -Headers $headers
+
+# profit bulanan - filter tahun
+Invoke-RestMethod -Uri "http://localhost:3000/dashboard/profit-bulanan?tahun=2026" -Headers $headers
+
+
+6. FETCH JS
+-----------
+const token = "eyJ...";
+const headers = {"Authorization": `Bearer ${token}`, "Content-Type": "application/json"};
+
+await fetch("http://localhost:3000/dashboard", { headers });
+await fetch("http://localhost:3000/dashboard/penjualan-bulanan", { headers });
+await fetch("http://localhost:3000/dashboard/penjualan-bulanan?periode=2026-08", { headers });
+await fetch("http://localhost:3000/dashboard/pembelian-bulanan?bulan=8&tahun=2026", { headers });
+await fetch("http://localhost:3000/dashboard/profit-bulanan?startDate=2026-01-01&endDate=2026-08-31", { headers });
+
+
+7. CATATAN
+----------
+- Tidak ada POST, PATCH, DELETE - read only
+- Semua data dari view SQL (view_dashboard, view_dashboard_penjualan_bulanan, view_dashboard_pembelian_bulanan, view_dashboard_profit_bulanan)
+- Swagger grouping "dashboard" dengan lock icon, perlu Authorize Bearer token
+- Field Decimal/Int dikembalikan sebagai number (bukan string) untuk view bulanan
+- view_dashboard field Decimal dikembalikan sebagai string (Prisma behavior)
+- Empty response = 200 array [] atau object zero-filled, bukan 404
