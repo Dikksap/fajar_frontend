@@ -376,7 +376,7 @@ export default function KomisiPage() {
                           <div className="font-bold text-primary">{fmtIDR(group.totalKomisi.toFixed(2))}</div>
                         </td>
                       </tr>
-                  {!collapsed && group.items.map((r) => (
+                  {!collapsed && group.items.map((r, i) => (
                         <tr key={r.idKomisi} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition cursor-pointer" onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}>
                           <td className="py-2.5 px-4 text-center text-on-surface-variant">{i + 1}</td>
                           <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant">#{r.idKomisi}</td>
@@ -392,7 +392,7 @@ export default function KomisiPage() {
                   );
                 })
               ) : (
-            filtered.map((r) => (
+            filtered.map((r, i) => (
                   <tr key={r.idKomisi} className="border-b border-outline-variant/20 hover:bg-surface-container-low transition cursor-pointer" onClick={() => getKomisiById(r.idKomisi).then(setDetail).catch(() => setDetail(r))}>
                     <td className="py-2.5 px-4 text-center text-on-surface-variant">{i + 1}</td>
                     <td className="py-2.5 px-4 font-mono text-xs text-on-surface-variant">#{r.idKomisi}</td>
