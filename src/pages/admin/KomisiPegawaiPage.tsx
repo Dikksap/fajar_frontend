@@ -84,7 +84,7 @@ export default function KomisiPegawaiPage() {
       const list = Array.isArray(pg) ? pg : [];
       setPegawais(list);
 
-      const q: KomisiQuery = filterMode === "bulan" && periode ? { periode } : filterMode === "hari" && tanggal ? { tanggal } : undefined;
+      const q = filterMode === "bulan" && periode ? { periode } : filterMode === "hari" && tanggal ? { tanggal } : undefined;
       const results = await Promise.all(
         list.map((p) => getKomisiByPegawai(p.idPegawai, q).catch(() => [] as Komisi[]))
       );
