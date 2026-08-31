@@ -272,7 +272,7 @@ export default function KomisiPage() {
                     </div>
                   </div>
                   {/* Group items */}
-                  {!collapsed && group.items.map((r, i) => (
+                  {!collapsed && group.items.map((r) => (
                     <div 
                       key={r.idKomisi} 
                       className="px-4 py-3 hover:bg-surface-container-low transition cursor-pointer border-l-2 border-primary/20 ml-4"
@@ -292,7 +292,7 @@ export default function KomisiPage() {
               );
             })
           ) : (
-            filtered.map((r, i) => (
+            filtered.map((r) => (
               <div 
                 key={r.idKomisi} 
                 className="p-4 hover:bg-surface-container-low transition cursor-pointer space-y-2"
